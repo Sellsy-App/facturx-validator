@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "facturx-validator"
+version = "0.1.0"
+description = "Outil de validation de fichiers Factur-X"
+authors = [{ name = "Valentin Navarrete", email = "vnavarrete@sellsy.com" }]
+dependencies = [
+    "pypdf",
+    "lxml",
+    "saxonche"
+]
+
+[project.scripts]
+facturx-validator = "facturx_validator.cli:main"
+
+[tool.setuptools]
+packages = [
+  "facturx_validator",
+  "facturx_validator.data",
+  "facturx_validator.data.factur_x_extended",
+  "facturx_validator.data.factur_x_extended._XSLT_EXTENDED"
+]
+
+[tool.setuptools.package-data]
+"facturx_validator" = [
+  "data/factur_x_extended/*.xsd",
+  "data/factur_x_extended/*.sch",
+  "data/factur_x_extended/_XSLT_EXTENDED/*.xslt",
+  "data/factur_x_extended/_XSLT_EXTENDED/*.xml"
+]
