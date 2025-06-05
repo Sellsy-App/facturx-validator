@@ -86,6 +86,23 @@ def _extract_field_from_location(location):
         return matches[-1]
     return None
 
+def _extract_field_from_xsd_error(error_line):
+    # Try to extract the field/element name from the XSD error message
+    import re
+    # Common pattern: Element 'FieldName': ...
+    match = re.search(r"Element '([^']+)'", error_line)
+    if match:
+        return match.group(1)
+    # Pattern: The attribute 'FieldName' is ...
+    match = re.search(r"attribute '([^']+)'", error_line)
+    if match:
+        return match.group(1)
+    # Pattern: Missing child element(s). Expected is ( FieldName )
+    match = re.search(r'Expected is \( ([^ )]+)', error_line)
+    if match:
+        return match.group(1)
+    return None
+
 def validate_all(xml_str):
     # XSD
     xsd_errors = []
@@ -102,7 +119,8 @@ def validate_all(xml_str):
             # On découpe les erreurs ligne par ligne
             for line in str(e).splitlines():
                 if line.strip():
-                    xsd_errors.append({'message': line.strip(), 'field': None})
+                    field = _extract_field_from_xsd_error(line.strip())
+                    xsd_errors.append({'message': line.strip(), 'field': field})
     except Exception as e:
         xsd_errors.append({'message': f'Erreur lors de la validation XSD : {e}', 'field': None})
 
