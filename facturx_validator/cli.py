@@ -2,13 +2,13 @@
 import sys
 import json
 import argparse
-from facturx_validator import extract_facturx_xml, validate_xml, validate_schematron, validate_all
+from facturx_validator import __version__, extract_facturx_xml, validate_xml, validate_schematron, validate_all
 
 def main():
     parser = argparse.ArgumentParser(description="Valide un fichier PDF Factur-X")
     parser.add_argument("pdf_path", help="Chemin du fichier PDF")
     parser.add_argument("--json", action="store_true", help="Affiche le résultat en JSON")
-
+    parser.add_argument("--version", action="version", version=f"facturx-validator {__version__}")
     args = parser.parse_args()
 
     with open(args.pdf_path, 'rb') as f:

@@ -3,7 +3,7 @@ from lxml import etree
 from importlib.resources import files
 from pathlib import Path
 
-XSD_PATH = files(__package__ + ".data.factur_x_extended").joinpath("Factur-X_1.07.3_EXTENDED.xsd")
+XSD_PATH = files(__package__ + ".data.factur_x_extended").joinpath("Factur-X_1.08_EXTENDED.xsd")
 XSLT_PATH = files(__package__ + ".data.factur_x_extended._XSLT_EXTENDED").joinpath("FACTUR-X_EXTENDED.xslt")
 
 def extract_facturx_xml(pdf_stream):
