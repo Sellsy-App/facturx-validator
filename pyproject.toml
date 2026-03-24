@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "facturx-validator"
-version = "0.1.1"
+version = "0.1.2"
 description = "Outil de validation de fichiers Factur-X"
 authors = [{ name = "Valentin Navarrete", email = "vnavarrete@sellsy.com" }]
 dependencies = [
@@ -21,7 +21,9 @@ packages = [
   "facturx_validator",
   "facturx_validator.data",
   "facturx_validator.data.factur_x_extended",
-  "facturx_validator.data.factur_x_extended._XSLT_EXTENDED"
+  "facturx_validator.data.factur_x_extended._XSLT_EXTENDED",
+  "facturx_validator.data.flux2",
+  "facturx_validator.data.flux2._XSLT"
 ]
 
 [tool.setuptools.package-data]
@@ -29,5 +31,7 @@ packages = [
   "data/factur_x_extended/*.xsd",
   "data/factur_x_extended/*.sch",
   "data/factur_x_extended/_XSLT_EXTENDED/*.xslt",
-  "data/factur_x_extended/_XSLT_EXTENDED/*.xml"
+  "data/factur_x_extended/_XSLT_EXTENDED/*.xml",
+  "data/flux2/*.sch",
+  "data/flux2/_XSLT/*.xsl"
 ]

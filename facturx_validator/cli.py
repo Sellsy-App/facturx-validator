@@ -23,7 +23,7 @@ def main():
         else:
             print("=== VALIDATION XSD ===")
             print(validate_xml(xml_str))
-            print("\n=== VALIDATION SCHEMATRON ===")
+            print("\n=== VALIDATION SCHEMATRON (EXTENDED + CTC-FR) ===")
             print(validate_schematron(xml_str))
 
 if __name__ == "__main__":
