@@ -2,7 +2,7 @@
 <schema xmlns="http://purl.oclc.org/dsdl/schematron"
     queryBinding="xslt2"
     schemaVersion="iso">
-  <title>Schema for Factur-X; 1.08; EN16931-CONFORMANT-EXTENDED</title>
+  <title>Schema for Factur-X; 1.09; EN16931-CONFORMANT-EXTENDED</title>
   <ns uri="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" prefix="rsm"/>
   <ns uri="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" prefix="qdt"/>
   <ns uri="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" prefix="ram"/>
@@ -39,26 +39,104 @@
   </pattern>
   <pattern>
     <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode[. = &apos;Z&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;))])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-Z-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “Z” ("Zero Rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero Rated" (Z), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
       <assert test="../ram:CalculatedAmount = 0">
 	[BR-Z-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where VAT category code (BT-118) is "Zero rated" shall equal 0 (zero).</assert>
-      <assert test="not(../ram:ExemptionReason) and not (../ram:ExemptionReasonCode)">
-	[BR-Z-10]-A VAT Breakdown (BG-23) with VAT Category code (BT-118) "Zero rated" shall not have a VAT exemption reason code (BT-121) or VAT exemption reason text (BT-120).</assert>
     </rule>
   </pattern>
   <pattern>
-    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode[.=&apos;S&apos;]">
-      <assert test="not(../ram:ExemptionReason) and not (../ram:ExemptionReasonCode)">
-	[BR-S-10]-A VAT Breakdown (BG-23) with VAT Category code (BT-118) "Standard rate" shall not have a VAT exemption reason code (BT-121) or VAT exemption reason text (BT-120).</assert>
-      <assert test="every $rate in ../ram:RateApplicablePercent/xs:decimal(.) satisfies (&#13;&#10;            for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate) and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;)])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance&#13;&#10;        )">
-	[BR-FXEXT-S-08]-For each different value of VAT category rate (BT-119) where the VAT category code (BT-118) is equal to “S” ("Standard rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charges amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Standard rated" (S) and the VAT rate (BT-152, BT-96, BT-103, BT-X-274) equals the VAT category rate (BT-119), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;AE&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-AE-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “AE” ("Reverse charge"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Reverse charge" (AE), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-AE-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “AE” ("Reverse charge"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Reverse charge" (AE), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value ""DETAIL" or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-AE-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “AE” ("Reverse charge"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Reverse charge" (AE), and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.             </assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;E&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-E-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “E” ("Exempt from VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Exempt from VAT" (E), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value ""DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-E-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “E” ("Exempt from VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Exempt from VAT" (E), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.        </assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-E-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “E” ("Exempt from VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Exempt from VAT" (E), and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified</assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;G&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-G-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “G” ("Export  outside  the EU"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Export  outside  the EU" (G), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-G-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “G” ("Export  outside  the EU"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Export  outside  the EU" (G), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-G-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “G” ("Export  outside  the EU"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Export  outside  the EU" (G), and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;K&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-IC-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “K” ("Intra-community supply"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Intra-community supply" (K), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-IC-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “K” ("Intra-community supply"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Intra-community supply" (K), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-IC-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “K” ("Intra-community supply"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Intra-community supply" (K), and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;L&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-AF-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “L” ("Canary Islands tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Canary Islands tax" (L), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-AF-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “L” ("Canary Islands tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Canary Islands tax" (L), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-AF-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “L” ("Canary Islands tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Canary Islands tax" (L), and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;M&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-AG-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “M” ("Ceuta and Mellita tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Ceuta and Mellita tax" (M), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-AG-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “M” ("Ceuta and Mellita tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Ceuta and Mellita tax" (M), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-AG-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “M” ("Ceuta and Mellita tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Ceuta and Mellita tax" (M), and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified. </assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;O&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos; and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos; and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos;])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos;]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-O-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “O” ("Not subject to VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Not subject to VAT" (O), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),        &#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos;])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos;]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-O-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “O” ("Not subject to VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Not subject to VAT" (O), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos; and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos; and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos; and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-O-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “O” ("Not subject to VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Not subject to VAT" (O) and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
     </rule>
   </pattern>
   <pattern>
     <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;S&apos;]">
-      <assert test="for&#13;&#10;	$BT117 in xs:decimal(ram:CalculatedAmount),	&#13;&#10;	$BT116 in xs:decimal(ram:BasisAmount),&#13;&#10;	$BT118 in xs:decimal(ram:RateApplicablePercent),&#13;&#10;	$calculatedAmount in xs:decimal(round($BT116 * $BT118 * xs:decimal(100)) div xs:decimal(100*100)),&#13;&#10;	$nbLineItems in xs:decimal(count(../../ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;])),&#13;&#10;	$nbAllowanceItems in xs:decimal(count(../ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;false&apos;])),&#13;&#10;	$nbChargeItems in xs:decimal(count(../ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;true&apos;]) + count(../ram:SpecifiedLogisticsServiceCharge)),&#13;&#10;	$tolerance in xs:decimal(0.01),&#13;&#10;	$maxTolerance in $tolerance * ($nbLineItems + $nbAllowanceItems + $nbChargeItems),&#13;&#10;	$diff in xs:decimal($BT117 - $calculatedAmount),&#13;&#10;	$abs in xs:decimal(abs($diff))&#13;&#10;return&#13;&#10;	$abs le $maxTolerance">
-	[BR-FXEXT-S-09]-For each different value of VAT category rate (BT-119) where the VAT category code (BT-118) is equal to “S” ("Standard rated"), Absolute Value of (VAT  category  tax  amount  (BT-117) - VAT category taxable amount (BT-116) multiplied by the VAT category rate (BT-119)/100) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Standard rated " (S), and the VAT rate (BT-152, BT-96, BT-103, BT-X-274) equals the VAT category rate (BT-119), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $vATAmountBT117 in xs:decimal(ram:CalculatedAmount),&#13;&#10;        $calculatedBT117 in xs:decimal(round($basisAmount * $rate div 100 * 100) div 100)&#13;&#10;        return &#13;&#10;        (abs($vATAmountBT117 - $calculatedBT117) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($vATAmountBT117 - $calculatedBT117) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-S-09b] - For each different value of VAT rate (BT-119) where the VAT category code (BT-118) is equal to “S” ("Standard rated"), Absolute Value of (VAT  category  tax  amount  (BT-117) - VAT category taxable amount (BT-116) multiplied by the VAT category rate (BT-119)/100) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level allowance amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Standard rated " (S), and the VAT rate (BT-152, BT-96, BT-103, BT-X-274) equals the VAT category rate (BT-119), and only for lines where the "Subtype of invoice line item" (EXT-FR-FE-163 / BT-X-8) has the value "DETAIL" or is not specified or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176) and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;S&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or  ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-S08b]-In a VAT breakdown (BG-23), for each different value of VAT rate (BT-119) where VAT category code (BT-118) is equal to “S” ("Standard Rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Standard Rated" (S), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified,  or the same rule but also taking into account the exemption reasons in Text (BT-120) and Code (BT-121) in BG-23 and the exemption reasons on each line (BT-X-96 / BT-X-97), on Document level Allowances  (BT-173 / BT-174) and on Document Level Charges (BT-175 / BT-176), and on Service logistic charges (BT-X-591 / BT-X-592). One of the two rules must be followed, bearing in mind that ultimately only the second one will have to be followed.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-S-08ini] - In a VAT breakdown (BG-23), for each different value of VAT rate (BT-119), where VAT category code (BT-118) is equal to “S” ("Standard Rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Standard Rated" (S), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;S&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;S&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-S-08rev] - In a VAT breakdown (BG-23), for each different value of VAT rate (BT-119), where VAT category code (BT-118) is equal to “S” ("Standard Rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Standard Rated" (S), and where applicable the VAT exemption reason and specification code (BT-195, BT-174 and BT-176 and BT-X-592) and the Exemption reason text (BT-194, BT-173 and BT-175 and BT-X-591) are identical with the VAT category VAT exemption reason and specification code (BT-121) and VAT exemption reason text (BT-120), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+    </rule>
+  </pattern>
+  <pattern>
+    <rule context="//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode=&apos;Z&apos;][upper-case(ram:TypeCode) = &apos;VAT&apos;]">
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return &#13;&#10;        (abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge)) or (abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini)))">
+	[BR-FXEXT-Z-08b] - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “Z” ("Zero Rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero Rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.   </assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate ]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;S&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99ini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItemsini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate])),&#13;&#10;        $nbAllowancesOrChargesini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate])),&#13;&#10;        $logisticChargeAmountini in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticChargeini in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131ini + $allowancesAmountBT92ini - $chargesAmountBT99ini - $logisticChargeAmountini) le 0.01 * ($nbLineItemsini + $nbAllowancesOrChargesini + $nblogisticChargeini))" flag="warning">
+	[BR-FXEXT-Z-08ini] - Without Exemption reason EN16931_2017 - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “Z” ("Zero Rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero Rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "DETAIL" or is not specified.    </assert>
+      <assert test="(for  &#13;&#10;        $rate in xs:decimal(ram:RateApplicablePercent),&#13;&#10;        $exempReasonText in normalize-space(ram:ExemptionReason),&#13;&#10;        $exempReasonCode in normalize-space(ram:ExemptionReasonCode),&#13;&#10;        $basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;        $calculatedAmountBT131 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100),&#13;&#10;        $allowancesAmountBT92 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $chargesAmountBT99 in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;        $nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;) and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;Z&apos; and ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/xs:decimal(ram:RateApplicablePercent) =$rate and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:CategoryTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate  and normalize-space(ram:CategoryTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:CategoryTradeTax/ram:ExemptionReason) = $exempReasonText])),&#13;&#10;        $logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;        $nblogisticCharge in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;Z&apos; and ram:AppliedTradeTax/xs:decimal(ram:RateApplicablePercent)=$rate and normalize-space(ram:AppliedTradeTax/ram:ExemptionReasonCode) = $exempReasonCode and normalize-space(ram:AppliedTradeTax/ram:ExemptionReason) = $exempReasonText]))&#13;&#10;        return      &#13;&#10;        abs($basisAmount - $calculatedAmountBT131 + $allowancesAmountBT92 - $chargesAmountBT99 - $logisticChargeAmount) le 0.01 * ($nbLineItems + $nbAllowancesOrCharges + $nblogisticCharge))" flag="warning">
+	[BR-FXEXT-Z-08rev] - With Exemption reason EN16931_2026  - In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “Z” ("Zero Rated"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-X-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero Rated" (Z).</assert>
     </rule>
   </pattern>
   <pattern>
@@ -81,7 +159,7 @@
 	[BR-CO-05]-Document level allowance reason code (BT-98) and Document level allowance reason (BT-97) shall indicate the same type of allowance.</assert>
       <assert test="(../ram:Reason) or (../ram:ReasonCode)">
 	[BR-CO-21]-Each Document level allowance (BG-20) shall contain a Document level allowance reason (BT-97) or a Document level allowance reason code (BT-98), or both.</assert>
-      <assert test="string-length(substring-after(../ram:ActualAmount,&apos;.&apos;))&lt;=2">
+      <assert test="string-length(substring-after(../ram:ActualAmount[1],&apos;.&apos;))&lt;=2">
 	[BR-DEC-01]-The allowed maximum number of decimals for the Document level allowance amount (BT-92) is 2.</assert>
       <assert test="string-length(substring-after(../ram:BasisAmount,&apos;.&apos;))&lt;=2">
 	[BR-DEC-02]-The allowed maximum number of decimals for the Document level allowance base amount (BT-93) is 2.</assert>
@@ -94,12 +172,8 @@
       <assert test="(../ram:CategoryTradeTax[upper-case(ram:TypeCode) = &apos;VAT&apos;]/ram:CategoryCode)">
 	[BR-37]-Each Document level charge (BG-21) shall have a Document level charge VAT category code (BT-102).</assert>
       <assert test="(../ram:Reason) or (../ram:ReasonCode)">
-	[BR-38]-Each Document level charge (BG-21) shall have a Document level charge reason (BT-104) or a Document level charge reason code (BT-105).</assert>
-      <assert test="true()">
-	[BR-CO-06]-Document level charge reason code (BT-105) and Document level charge reason (BT-104) shall indicate the same type of charge.</assert>
-      <assert test="(../ram:Reason) or (../ram:ReasonCode)">
-	[BR-CO-22]-Each Document level charge (BG-21) shall contain a Document level charge reason (BT-104) or a Document level charge reason code (BT-105), or both.</assert>
-      <assert test="string-length(substring-after(../ram:ActualAmount,&apos;.&apos;))&lt;=2">
+	[BR-FXEXT-BR-38]-Each Document level charge or tax (BG-21) shall contain a Document level charge or tax reason (BT-104) or a Document level charge reason code (BT-105) or Document level non-VAT tax code (BT-177), or both reason and code.</assert>
+      <assert test="string-length(substring-after(../ram:ActualAmount[1],&apos;.&apos;))&lt;=2">
 	[BR-DEC-05]-The allowed maximum number of decimals for the Document level charge amount (BT-99) is 2.</assert>
       <assert test="string-length(substring-after(../ram:BasisAmount,&apos;.&apos;))&lt;=2">
 	[BR-DEC-06]-The allowed maximum number of decimals for the Document level charge base amount (BT-100) is 2.</assert>
@@ -119,7 +193,7 @@
   </pattern>
   <pattern>
     <rule context="//ram:ApplicableTradeSettlementFinancialCard">
-      <assert test="string-length(ram:ID)&lt;=10">
+      <assert test="string-length(normalize-space(ram:ID)) &lt;= 10">
 	[BR-51]-In accordance with card payments security standards an invoice should never include a full card primary account number (BT-87). At the moment PCI Security Standards Council has defined that the first 6 digits and last 4 digits are the maximum number of digits to be shown.</assert>
     </rule>
   </pattern>
@@ -137,12 +211,8 @@
 	[BR-FXEXT-08]-If the "Subtype of invoice item" (BT-X-8) has the value "Subtotal" (GROUP) and the "Net amount of the invoice item" (BT-131) is specified, it must correspond to the sum of the BT-131 of the next lower levels for which the "Subtype of the invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or "Subtotal" (GROUP). As a consequence, all lower levels shall contain a BT-131 value, when BT-X-8 has the value DETAIL or GROUP.</assert>
       <assert test="(ram:AssociatedDocumentLineDocument/ram:LineID!=&apos;&apos;)">
 	[BR-21]-Each Invoice line (BG-25) shall have an Invoice line identifier (BT-126).</assert>
-      <assert test="(ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount)">
-	[BR-24]-Each Invoice line (BG-25) shall have an Invoice line net amount (BT-131).</assert>
       <assert test="(ram:SpecifiedTradeProduct/ram:Name!=&apos;&apos;)">
 	[BR-25]-Each Invoice line (BG-25) shall contain the Item name (BT-153).</assert>
-      <assert test="(ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:ChargeAmount &gt;= 0) or not(ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:ChargeAmount)">
-	[BR-28]-The Item gross price (BT-148) shall NOT be negative.</assert>
       <assert test="ram:SpecifiedTradeProduct/ram:GlobalID/@schemeID!=&apos;&apos; or not (ram:SpecifiedTradeProduct/ram:GlobalID)">
 	[BR-64]-The Item standard identifier (BT-157) shall have a Scheme identifier.</assert>
       <assert test="(ram:SpecifiedTradeProduct/ram:DesignatedProductClassification/ram:ClassCode/@listID!=&apos;&apos;) or not (ram:SpecifiedTradeProduct/ram:DesignatedProductClassification)">
@@ -154,25 +224,27 @@
   <pattern>
     <rule context="//ram:IncludedSupplyChainTradeLineItem&#13;&#10;               [normalize-space(ram:AssociatedDocumentLineDocument/ram:ParentLineID) != &apos;&apos;]">
       <assert test="some $p in //ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument/ram:LineID&#13;&#10;      satisfies normalize-space($p)&#13;&#10;                = normalize-space(ram:AssociatedDocumentLineDocument/ram:ParentLineID)&#13;&#10;    ">
-	[BR-FXEXT-11]-Each "ID of parent line" (BT-X-304) must refer to an existing "Invoice item identifier" (BT-126).</assert>
+	[BR-FXEXT-11]-Each "ID of parent line" (BT-X-304) must refer to an existing "ID of invoice item" (BT-126).</assert>
     </rule>
   </pattern>
   <pattern>
-    <rule context="//ram:IncludedSupplyChainTradeLineItem[(not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;)]">
-      <assert test="(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax[upper-case(ram:TypeCode) = &apos;VAT&apos;]/ram:CategoryCode)">
+    <rule context="//ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument[not(ram:LineStatusReasonCode) or ram:LineStatusReasonCode = &apos;DETAIL&apos;]">
+      <assert test="(../ram:SpecifiedLineTradeDelivery/ram:BilledQuantity)">
+	[BR-FXEXT-BR-22]-Each invoice line item "INVOICE LINE" (BG-25) must contain the quantity of goods or services invoiced in the relevant line item as a line item "Invoiced quantity" (BT-129) if the "Subtype of invoice line item" (BT-X-8) has the value "Normal line item (standard case)" (DETAIL) or is not specified.</assert>
+      <assert test="(../ram:SpecifiedLineTradeDelivery/ram:BilledQuantity/@unitCode)">
+	[BR-FXEXT-BR-23]-An Invoice line (BG-25) shall have an Invoiced quantity unit of measure code (BT-130) if the "Subtype of invoice line item" (BT-X-8) has the value "Normal line item (standard case)" (DETAIL) or is not specified.</assert>
+      <assert test="(../ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount)">
+	[BR-FXEXT-BR-24]-Each Invoice line (BG-25) shall have an Invoice line net amount (BT-131), if the "Subtype of invoice line item" (BT-X-8) has the value "DETAIL" or is not specified.</assert>
+      <assert test="(../ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount)">
+	[BR-FXEXT-BR-26]-Each Invoice line (BG-25) shall contain the Item net price (BT-146) if the "Subtype of invoice line item" (BT-X-8) has the value "Normal line item (standard case)" (DETAIL) or is not specified.</assert>
+      <assert test="(../ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax[upper-case(ram:TypeCode) = &apos;VAT&apos;]/ram:CategoryCode)">
 	[BR-FXEXT-CO-04]-Each Invoice line (BG-25) shall be categorized with an Invoiced item VAT category code (BT-151) if the "Subtype of invoice line item" (BT-X-8) has the value "Normal line item (standard case)" (DETAIL) or is not specified.</assert>
     </rule>
   </pattern>
   <pattern>
-    <rule context="//ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode)&#13;&#10;   or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]">
-      <assert test="(ram:SpecifiedLineTradeDelivery/ram:BilledQuantity)">
-	[BR-FXEXT-BR-22]-Each invoice item "INVOICE LINE" (BG-25) must contain the quantity of goods or services invoiced in the relevant item as a line item "Invoiced quantity" (BT-129) if the "Subtype of invoice item" (BT-X-8) has the value "Normal item (standard case)" (DETAIL) or is not specified.</assert>
-      <assert test="(ram:SpecifiedLineTradeDelivery/ram:BilledQuantity/@unitCode)">
-	[BR-FXEXT-BR-23]-An Invoice line (BG-25) shall have an Invoiced quantity unit of measure code (BT-130) if the "Subtype of invoice line item" (BT-X-8) has the value "Normal line item (standard case)" (DETAIL) or is not specified.</assert>
-      <assert test="(ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount)">
-	[BR-FXEXT-BR-26]-Each Invoice line (BG-25) shall contain the Item net price (BT-146) if the "Subtype of invoice line item" (BT-X-8) has the value "Normal line item (standard case)" (DETAIL) or is not specified.</assert>
-      <assert test="(ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount) &gt;= 0">
-	[BR-FXEXT-BR-27]-The Item net price (BT-146) shall NOT be negative, when it is present. If the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified, BT-146 shall be present and not negative. If the "Subtype of invoice item" (BT-X-8) has any other value, BT-146 may be omitted. If present, it shall not be negative.</assert>
+    <rule context="//ram:IncludedSupplyChainTradeLineItem[ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;GROUP&apos; and exists(ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount)]">
+      <assert test="(for&#13;&#10;        $lineID in ram:AssociatedDocumentLineDocument/ram:LineID,&#13;&#10;        $numberChildWG in count(//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[ram:AssociatedDocumentLineDocument/ram:ParentLineID = $lineID and ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;GROUP&apos;]),&#13;&#10;        $numberChildWGAndBT131 in count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[ram:AssociatedDocumentLineDocument/ram:ParentLineID = $lineID and ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;GROUP&apos;]/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount)&#13;&#10;        return&#13;&#10;        ($numberChildWG = $numberChildWGAndBT131))">
+	[BR-FXEXT-12]-If the "Subtype of invoice line item" (EXT-FR-FE-163 / BT-X-8) has the value  "GROUP" and if the "Invoice line net amount" (BT-131) is specified, all lower levels which has "Subtype of invoice line item" (EXT-FR-FE-163) equal to "GROUP" MUST contain a "Invoice line net amount" (BT-131) value.</assert>
     </rule>
   </pattern>
   <pattern>
@@ -183,11 +255,11 @@
   </pattern>
   <pattern>
     <rule context="//ram:SellerTaxRepresentativeTradeParty">
-      <assert test="(ram:Name)">
+      <assert test="normalize-space(ram:Name) != &apos;&apos;">
 	[BR-18]-The Seller tax representative name (BT-62) shall be provided in the Invoice, if the Seller (BG-4) has a Seller tax representative party (BG-11).</assert>
       <assert test="(ram:PostalTradeAddress)">
 	[BR-19]-The Seller tax representative postal address (BG-12) shall be provided in the Invoice, if the Seller (BG-4) has a Seller tax representative party (BG-11).</assert>
-      <assert test="(ram:PostalTradeAddress/ram:CountryID)">
+      <assert test="normalize-space(ram:PostalTradeAddress/ram:CountryID) != &apos;&apos;">
 	[BR-20]-The Seller tax representative postal address (BG-12) shall contain a Tax representative country code (BT-69), if the Seller (BG-4) has a Seller tax representative party (BG-11).</assert>
       <assert test="(ram:SpecifiedTaxRegistration/ram:ID[@schemeID=&apos;VA&apos;]!=&apos;&apos;)">
 	[BR-56]-Each Seller tax representative party (BG-11) shall have a Seller tax representative VAT identifier (BT-63).</assert>
@@ -221,7 +293,7 @@
 	[BR-CO-07]-Invoice line allowance reason code (BT-140) and Invoice line allowance reason (BT-139) shall indicate the same type of allowance reason.</assert>
       <assert test="(../ram:Reason) or (../ram:ReasonCode)">
 	[BR-CO-23]-Each Invoice line allowance (BG-27) shall contain an Invoice line allowance reason (BT-139) or an Invoice line allowance reason code (BT-140), or both.</assert>
-      <assert test="string-length(substring-after(../ram:ActualAmount,&apos;.&apos;))&lt;=2">
+      <assert test="string-length(substring-after(../ram:ActualAmount[1],&apos;.&apos;))&lt;=2">
 	[BR-DEC-24]-The allowed maximum number of decimals for the Invoice line allowance amount (BT-136) is 2.</assert>
       <assert test="string-length(substring-after(../ram:BasisAmount,&apos;.&apos;))&lt;=2">
 	[BR-DEC-25]-The allowed maximum number of decimals for the Invoice line allowance base amount (BT-137) is 2.</assert>
@@ -232,12 +304,8 @@
       <assert test="(../ram:ActualAmount)">
 	[BR-43]-Each Invoice line charge (BG-28) shall have an Invoice line charge amount (BT-141).</assert>
       <assert test="(../ram:Reason) or (../ram:ReasonCode)">
-	[BR-44]-Each Invoice line charge (BG-28) shall have an Invoice line charge reason (BT-144) or an Invoice line charge reason code (BT-145).</assert>
-      <assert test="true()">
-	[BR-CO-08]-Invoice line charge reason code (BT-145) and Invoice line charge reason (BT-144) shall indicate the same type of charge reason.</assert>
-      <assert test="(../ram:Reason) or (../ram:ReasonCode)">
-	[BR-CO-24]-Each Invoice line charge (BG-28) shall contain an Invoice line charge reason (BT-144) or an Invoice line charge reason code (BT-145), or both.</assert>
-      <assert test="string-length(substring-after(../ram:ActualAmount,&apos;.&apos;))&lt;=2">
+	[BR-FXEXT-BR-44]-Each Invoice line charge or tax (BG-28) shall have an Invoice line charge or tax reason (BT-144), an Invoice line charge reason code (BT-145) or an Invoice line-level non-VAT tax type code (BT-193).</assert>
+      <assert test="string-length(substring-after(../ram:ActualAmount[1],&apos;.&apos;))&lt;=2">
 	[BR-DEC-27]-The allowed maximum number of decimals for the Invoice line charge amount (BT-141) is 2.</assert>
       <assert test="string-length(substring-after(../ram:BasisAmount,&apos;.&apos;))&lt;=2">
 	[BR-DEC-28]-The allowed maximum number of decimals for the Invoice line charge base amount (BT-142) is 2.</assert>
@@ -404,7 +472,7 @@
   <pattern>
     <rule context="//ram:SpecifiedTradeSettlementHeaderMonetarySummation">
       <assert test="for $calculatedAmount in xs:decimal(round(sum(../../ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode)&#13;&#10; or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount) * xs:decimal(100)) div xs:decimal(100)),&#13;&#10;            $totalAmount in xs:decimal(ram:LineTotalAmount),&#13;&#10;            $nbLineItems in xs:decimal(count(../../ram:IncludedSupplyChainTradeLineItem)),&#13;&#10;            $tolerance in xs:decimal(0.01),&#13;&#10;            $maxTolerance in $nbLineItems * $tolerance,&#13;&#10;            $diff in xs:decimal($totalAmount - $calculatedAmount),&#13;&#10;            $abs in xs:decimal(abs($diff))&#13;&#10;        return&#13;&#10;        $abs le $maxTolerance">
-	[BR-FXEXT-CO-10]-Absolute Value of (Sum of Invoice line net amount (BT-106) - Σ Invoice line net amounts (BT-131))&lt;= 0,01 * Number of line net amounts (BT-131), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
+	[BR-FXEXT-CO-10]-Absolute Value of (Sum of Invoice line net amount (BT-106) - Σ Invoice line net amounts (BT-131))&lt;= 0,01 * Number of line net amounts (BT-131).</assert>
       <assert test="(ram:LineTotalAmount)">
 	[BR-12]-An Invoice shall have the Sum of Invoice line net amount (BT-106).</assert>
       <assert test="(ram:TaxBasisTotalAmount)">
@@ -418,15 +486,15 @@
       <assert test="(not(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;true&apos;])and not (ram:ChargeTotalAmount)) &#13;&#10;or&#13;&#10;(for $calculatedAmount in xs:decimal(xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;true&apos;]/ram:ActualAmount)* 100 ) div 100)+ xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedAmount)* 10 * 10 ) div 100)),&#13;&#10;            $totalAmount in xs:decimal(ram:ChargeTotalAmount),&#13;&#10;                        $nbChargeItems in xs:decimal(count(../ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;true&apos;]) + count(../ram:SpecifiedLogisticsServiceCharge)),&#13;&#10;            $tolerance in xs:decimal(0.01),&#13;&#10;            $maxTolerance in $nbChargeItems * $tolerance,&#13;&#10;            $diff in xs:decimal($totalAmount - $calculatedAmount),&#13;&#10;            $abs in xs:decimal(abs($diff))&#13;&#10;        return&#13;&#10;        $abs le $maxTolerance)">
 	[BR-FXEXT-CO-12]-Absolute Value of (Sum of charges on document level (BT-108) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272))&lt;= 0,01 * (Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)).</assert>
       <assert test="for $BT109 in xs:decimal(ram:TaxBasisTotalAmount),&#13;&#10;			$BT131Sum in xs:decimal(round(sum(../../ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode)&#13;&#10; or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount) * xs:decimal(100)) div xs:decimal(100)),&#13;&#10;			$BT92Sum in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;false&apos;]/ram:ActualAmount)* 10 * 10 ) div 100),&#13;&#10;			$BT99Sum in xs:decimal(xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;true&apos;]/ram:ActualAmount)* 100 ) div 100)+ xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedAmount)* 10 * 10 ) div 100)),&#13;&#10;			$nbLineItems in xs:decimal(count(../../ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode)&#13;&#10; or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;])),&#13;&#10;			$nbAllowanceItems in xs:decimal(count(../ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;false&apos;])),&#13;&#10;			$nbChargeItems in xs:decimal(count(../ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;true&apos;]) + count(../ram:SpecifiedLogisticsServiceCharge)),&#13;&#10;            $tolerance in xs:decimal(0.01),&#13;&#10;            $maxTolerance in $tolerance * ($nbLineItems + $nbAllowanceItems + $nbChargeItems),&#13;&#10;            $diff in xs:decimal($BT109 - $BT131Sum + $BT92Sum - $BT99Sum),&#13;&#10;            $abs in xs:decimal(abs($diff))&#13;&#10;        return&#13;&#10;        $abs le $maxTolerance">
-	[BR-FXEXT-CO-13]-Absolute Value of (Invoice total amount without VAT (BT-109) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99)) &lt;= 0,01 * (Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
+	[BR-FXEXT-CO-13]-Absolute Value of (Invoice total amount without VAT (BT-109) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99)) &lt;= 0,01 * (Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99)).</assert>
       <assert test="for $Currency in ../ram:InvoiceCurrencyCode,&#13;&#10;			$BT109 in xs:decimal(ram:TaxBasisTotalAmount),&#13;&#10;			$BT110 in xs:decimal(ram:TaxTotalAmount[@currencyID=$Currency]),			&#13;&#10;			$BT112 in xs:decimal(ram:GrandTotalAmount),&#13;&#10;			$nbTaxTotalAmountInvoiceCurrency in count (ram:TaxTotalAmount[@currencyID=$Currency] ),&#13;&#10;			$nbLineItems in xs:decimal(count(../../ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode)&#13;&#10; or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;])),&#13;&#10;			$nbAllowanceItems in xs:decimal(count(../ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;false&apos;])),&#13;&#10;			$nbChargeItems in xs:decimal(count(../ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&apos;true&apos;]) + count(../ram:SpecifiedLogisticsServiceCharge)),&#13;&#10;			$tolerance in xs:decimal(0.01),&#13;&#10;			$maxTolerance in $tolerance * ($nbLineItems + $nbAllowanceItems + $nbChargeItems),&#13;&#10;			$diff in xs:decimal($BT112 - $BT110 - $BT109),&#13;&#10;			$abs in xs:decimal(abs($diff))&#13;&#10;return&#13;&#10;		($abs le $maxTolerance and $nbTaxTotalAmountInvoiceCurrency eq 1) or&#13;&#10;		($BT109 eq $BT112 and $nbTaxTotalAmountInvoiceCurrency ne 1)">
-	[BR-FXEXT-CO-15]-If Invoice Total VAT amount (BT-110), where currency (BT-110-0) is equal to BT-5, is present, then the Absolute Value of (Invoice total amount with VAT (BT-112) - Invoice total amount without VAT (BT-109) - Invoice total VAT amount (BT-110)) &lt;= 0,01 * (Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charges amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified. Else, Invoice total amount with VAT (BT-112) is equal to Invoice total amount without VAT (BT-109), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z).</assert>
-      <assert test="(xs:decimal(ram:DuePayableAmount) = xs:decimal(ram:GrandTotalAmount) - xs:decimal(ram:TotalPrepaidAmount) + xs:decimal(ram:RoundingAmount)) or &#13;&#10;    ((xs:decimal(ram:DuePayableAmount) = xs:decimal(ram:GrandTotalAmount) + xs:decimal(ram:RoundingAmount)) and not (xs:decimal(ram:TotalPrepaidAmount))) or &#13;&#10;    ((xs:decimal(ram:DuePayableAmount) = xs:decimal(ram:GrandTotalAmount) - xs:decimal(ram:TotalPrepaidAmount)) and not (xs:decimal(ram:RoundingAmount))) or &#13;&#10;    ((xs:decimal(ram:DuePayableAmount) = xs:decimal(ram:GrandTotalAmount)) and not (xs:decimal(ram:TotalPrepaidAmount)) and not (xs:decimal(ram:RoundingAmount)))">
-	[BR-CO-16]-Amount due for payment (BT-115) = Invoice total amount with VAT (BT-112) -Paid amount (BT-113) +Rounding amount (BT-114).</assert>
+	[BR-FXEXT-CO-15]-If Invoice Total VAT amount (BT-110) ,where currency (BT-110-0) is equal to BT-5, is present, then the Absolute Value of (Invoice total amount with VAT (BT-112) - Invoice total amount without VAT (BT-109) - Invoice total VAT amount (BT-110)) &lt;= 0,01 * (Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charges amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272). Else, Invoice total amount with VAT (BT-112) is equal to Invoice total amount without VAT (BT-109).</assert>
+      <assert test="xs:decimal(ram:DuePayableAmount) = xs:decimal(sum(ram:GrandTotalAmount/xs:decimal(.))) - xs:decimal(sum(ram:TotalPrepaidAmount/xs:decimal(.))) + xs:decimal(sum(ram:RoundingAmount/xs:decimal(.))) + xs:decimal(sum(../ram:SpecifiedFinancialAdjustment/ram:ActualAmount/xs:decimal(.)))">
+	[BR-FXEXT-CO-16]-Amount due for payment (BT-115) = Invoice total amount with VAT (BT-112) -Paid amount (BT-113) + Rounding amount (BT-114) + Sum of Charge amount collected on behalf of a third party (BT-179).</assert>
       <assert test="string-length(substring-after(ram:LineTotalAmount,&apos;.&apos;))&lt;=2">
 	[BR-DEC-09]-The allowed maximum number of decimals for the Sum of Invoice line net amount (BT-106) is 2.</assert>
       <assert test="string-length(substring-after(ram:AllowanceTotalAmount,&apos;.&apos;))&lt;=2">
-	[BR-DEC-10]-The allowed maximum number of decimals for the Sum of allowanced on document level (BT-107) is 2.</assert>
+	[BR-DEC-10]-The allowed maximum number of decimals for the Sum of allowances on document level (BT-107) is 2.</assert>
       <assert test="string-length(substring-after(ram:ChargeTotalAmount,&apos;.&apos;))&lt;=2">
 	[BR-DEC-11]-The allowed maximum number of decimals for the Sum of charges on document level (BT-108) is 2.</assert>
       <assert test="string-length(substring-after(ram:TaxBasisTotalAmount,&apos;.&apos;))&lt;=2">
@@ -463,7 +531,7 @@
   </pattern>
   <pattern>
     <rule context="//ram:SpecifiedTradeSettlementPaymentMeans[ram:TypeCode=&apos;30&apos; or ram:TypeCode=&apos;58&apos;]/ram:PayeePartyCreditorFinancialAccount">
-      <assert test="(ram:IBANID) or (ram:ProprietaryID)">
+      <assert test="normalize-space(ram:IBANID) != &apos;&apos; or normalize-space(ram:ProprietaryID) != &apos;&apos;">
 	[BR-50]-A Payment account identifier (BT-84) shall be present if Credit transfer (BG-16) information is provided in the Invoice.</assert>
       <assert test="(ram:IBANID) or (ram:ProprietaryID)">
 	[BR-61]-If the Payment means type code (BT-81) means SEPA credit transfer, Local credit transfer or Non-SEPA international credit transfer, the Payment account identifier (BT-84) shall be present.</assert>
@@ -483,8 +551,6 @@
   </pattern>
   <pattern>
     <rule context="//rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode[. = &apos;AE&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;AE&apos;) and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;)])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;AE&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;AE&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-AE-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “AE” ("Reverse Charge"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charge amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Reversed Charge" (AE).</assert>
       <assert test="../ram:CalculatedAmount = 0">
 	[BR-AE-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where the VAT category code (BT-118) is "Reverse charge" shall be 0 (zero).</assert>
       <assert test="(../ram:ExemptionReason) or (../ram:ExemptionReasonCode)">
@@ -493,18 +559,14 @@
   </pattern>
   <pattern>
     <rule context="//rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode[. = &apos;E&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;E&apos;) and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;)])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;E&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;E&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-E-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “E” ("Exempt from VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charges amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Exempt from VAT" (E), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
       <assert test="../ram:CalculatedAmount = 0">
-	[BR-E-09]-The VAT category tax amount (BT-117) In a VAT breakdown (BG-23) where the VAT category code (BT-118) equals "Exempt from VAT" shall equal 0 (zero).</assert>
+	[BR-E-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where the VAT category code (BT-118) equals "Exempt from VAT" shall equal 0 (zero).</assert>
       <assert test="(../ram:ExemptionReason) or (../ram:ExemptionReasonCode)">
 	[BR-E-10]-A VAT Breakdown (BG-23) with VAT Category code (BT-118) "Exempt from VAT" shall have a VAT exemption reason code (BT-121) or a VAT exemption reason text (BT-120).</assert>
     </rule>
   </pattern>
   <pattern>
     <rule context="//rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode[. = &apos;G&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;G&apos;) and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;)])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;G&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;G&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-G-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “G” ("Export outside the EU"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charges amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Export outside the EU " (G), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
       <assert test="../ram:CalculatedAmount = 0">
 	[BR-G-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where the VAT category code (BT-118) is "Export outside the EU" shall be 0 (zero).</assert>
       <assert test="(../ram:ExemptionReason) or (../ram:ExemptionReasonCode)">
@@ -513,8 +575,6 @@
   </pattern>
   <pattern>
     <rule context="//rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode[.= &apos;K&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;K&apos; and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;))])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;K&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;K&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-IC-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “K” ("Intra-community supply"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charges amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Intra-community supply " (K), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
       <assert test="../ram:CalculatedAmount = 0">
 	[BR-IC-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where the VAT category code (BT-118) is "Intra-community supply" shall be 0 (zero).</assert>
       <assert test="(../ram:ExemptionReason) or (../ram:ExemptionReasonCode)">
@@ -527,28 +587,18 @@
   </pattern>
   <pattern>
     <rule context="//rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode = &apos;L&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;L&apos;) and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;)])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;L&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;L&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-AF-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “L” ("Canary Islands tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charges amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Canary Islands tax " (L).</assert>
       <assert test="true()">
 	[BR-AF-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where VAT category code (BT-118) is "IGIC" shall equal the VAT category taxable amount (BT-116) multiplied by the VAT category rate (BT-119).</assert>
-      <assert test="not(ram:ExemptionReason) and not (ram:ExemptionReasonCode)">
-	[BR-AF-10]-A VAT Breakdown (BG-23) with VAT Category code (BT-118) "IGIC" shall not have a VAT exemption reason code (BT-121) or VAT exemption reason text (BT-120).</assert>
     </rule>
   </pattern>
   <pattern>
     <rule context="//rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode = &apos;M&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(../ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;M&apos;and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;))])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;M&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;M&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-AG-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “M” ("Ceuta and Mellita tax"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charges amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Ceuta and Mellita tax " (M).</assert>
       <assert test="true()">
 	[BR-AG-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where VAT category code (BT-118) is "IPSI" shall equal the VAT category taxable amount (BT-116) multiplied by the VAT category rate (BT-119).</assert>
-      <assert test="not(ram:ExemptionReason) and not (ram:ExemptionReasonCode)">
-	[BR-AG-10]-A VAT Breakdown (BG-23) with VAT Category code (BT-118) "IPSI" shall not have a VAT exemption reason code (BT-121) or VAT exemption reason text (BT-120).</assert>
     </rule>
   </pattern>
   <pattern>
     <rule context="//rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax[ram:CategoryCode = &apos;O&apos;]">
-      <assert test="for &#13;&#10;				$basisAmount in xs:decimal(ram:BasisAmount),&#13;&#10;				$lineAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;]/ram:SpecifiedLineTradeSettlement[ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos;]/ram:SpecifiedTradeSettlementLineMonetarySummation/xs:decimal(ram:LineTotalAmount)) * 100) div 100), &#13;&#10;			    $chargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=true() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$logisticChargeAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:AppliedAmount)) * 100) div 100),&#13;&#10;				$allowanceAmount in xs:decimal(round(sum(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=false() and ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;]/xs:decimal(ram:ActualAmount)) * 100) div 100),&#13;&#10;				$calculatedAmount in xs:decimal($lineAmount + $chargeAmount + $logisticChargeAmount - $allowanceAmount),&#13;&#10;				$nbLineItems in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[(ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode = &apos;O&apos; and (not(ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode) or ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode = &apos;DETAIL&apos;))])),&#13;&#10;				$nbAllowancesOrCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:CategoryTradeTax/ram:CategoryCode=&apos;O&apos;])),&#13;&#10;				$nbLogisticCharges in xs:decimal(count(/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge[ram:AppliedTradeTax/ram:CategoryCode=&apos;O&apos;])),&#13;&#10;				$tolerance in xs:decimal(0.01),&#13;&#10;				$maxTolerance in $tolerance * ($nbLineItems + $nbAllowancesOrCharges + $nbLogisticCharges),&#13;&#10;				$diff in xs:decimal($basisAmount - $calculatedAmount),&#13;&#10;				$abs in xs:decimal(abs($diff))&#13;&#10;            return&#13;&#10;                $abs le $maxTolerance">
-	[BR-FXEXT-O-08]-In a VAT breakdown (BG-23) where VAT category code (BT-118) is equal to “O” ("Not subject to VAT"), Absolute Value of (VAT category taxable amount (BT-116) - ∑ Invoice line net amounts (BT-131) + Σ Document level allowance amounts (BT-92) - Σ Document level charges amounts (BT-99) - Σ Logistics Service fee amounts (BT-x-272)) &lt;= 0,01 * ((Number of line net amounts (BT-131) + Number of Document level allowance amounts (BT-92) + Number of Document level charge amounts (BT-99) + Number of Logistics Service fee amounts (BT-X-272)), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is " Not subject to VAT " (O), where the VAT category code (BT-151, BT-95, BT-102, BT-X-273) is "Zero rated" (Z), but only for lines where the "Subtype of invoice item" (BT-X-8) has the value "Regular item (standard case)" (DETAIL) or is not specified.</assert>
       <assert test="ram:CalculatedAmount = 0">
 	[BR-O-09]-The VAT category tax amount (BT-117) in a VAT breakdown (BG-23) where the VAT category code (BT-118) is "Not subject to VAT" shall be 0 (zero).</assert>
       <assert test="(ram:ExemptionReason) or (ram:ExemptionReasonCode)">
@@ -628,7 +678,7 @@
   <pattern>
     <rule context="//udt:DateTimeString[@format = &apos;102&apos;]">
       <assert test="matches(.,&apos;^\s*(\d{4})(1[0-2]|0[1-9]){1}(3[01]|[12][0-9]|0[1-9]){1}\s*$&apos;)">
-	[CII-DT-097] - Date time string with format attribute 102 shall be YYYYMMDD.</assert>
+	[CII-DT-097]-Date time string with format attribute 102 shall be YYYYMMDD.</assert>
     </rule>
   </pattern>
   <pattern>
@@ -726,12 +776,6 @@
     </rule>
   </pattern>
   <pattern>
-    <rule context="/rsm:CrossIndustryInvoice[&#13;&#10;  rsm:ExchangedDocument/ram:TypeCode != &apos;386&apos;&#13;&#10;]/rsm:SupplyChainTradeTransaction[&#13;&#10;  (&#13;&#10;    ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;    and&#13;&#10;    ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;  )&#13;&#10;  or&#13;&#10;  (&#13;&#10;    ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;    and&#13;&#10;    ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;  )&#13;&#10;  or&#13;&#10;  (&#13;&#10;    ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;    and&#13;&#10;    ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;  )&#13;&#10;  or&#13;&#10;  (&#13;&#10;    ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;    and&#13;&#10;    ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:PostalTradeAddress/ram:CountryID[upper-case(normalize-space(.))=&apos;DE&apos;]&#13;&#10;  )&#13;&#10;]">
-      <assert test="(&#13;&#10;        ram:ApplicableHeaderTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime&#13;&#10;        or ram:ApplicableHeaderTradeSettlement/ram:BillingSpecifiedPeriod&#13;&#10;        or (every $line in ram:IncludedSupplyChainTradeLineItem&#13;&#10;            satisfies $line/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod)&#13;&#10;      )&#13;&#10;      and&#13;&#10;      (&#13;&#10;        ram:ApplicableHeaderTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime&#13;&#10;        or normalize-space(string-join(ram:ApplicableHeaderTradeDelivery//text(),&apos;&apos;)) != &apos;&apos;&#13;&#10;      )">
-	[BR-FX-EN-04]-An invoice that is not a down payment invoice (code 386) must contain either BT-72 "Actual delivery date", BG-14 "Invoicing period" or BG-26 "Invoice line period" in each invoice item to indicate the delivery/service date. If BT-72 is not used, at least the country of delivery (BT-80) must be specified for technical reasons.</assert>
-    </rule>
-  </pattern>
-  <pattern>
     <rule context="/rsm:CrossIndustryInvoice/rsm:ExchangedDocument">
       <assert test="count(ram:ID)=1">
 	Element 'ram:ID' must occur exactly 1 times.</assert>
@@ -750,7 +794,7 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:EffectiveSpecifiedPeriod/ram:Description">
@@ -782,8 +826,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:IncludedNote/ram:SubjectCode">
-      <let name="codeValue4" value="."/>
-      <assert test="string-length($codeValue4)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=4]/enumeration[@value=$codeValue4]">
+      <let name="codeValue5" value="."/>
+      <assert test="string-length($codeValue5)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=5]/enumeration[@value=$codeValue5]">
 	Value of 'ram:SubjectCode' is not allowed.</assert>
       <report test="@listID">
 	Attribute @listID' marked as not used in the given context.</report>
@@ -794,16 +838,19 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:LanguageID">
+      <let name="codeValue4" value="."/>
+      <assert test="string-length($codeValue4)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=4]/enumeration[@value=$codeValue4]">
+	Value of 'ram:LanguageID' is not allowed.</assert>
       <report test="@schemeID">
 	Attribute @schemeID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:TypeCode">
       <let name="codeValue2" value="."/>
-      <assert test="string-length($codeValue2)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=2]/enumeration[@value=$codeValue2]">
+      <assert test="string-length($codeValue2)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=2]/enumeration[@value=$codeValue2]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:ExchangedDocumentContext">
@@ -826,7 +873,7 @@
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:ExchangedDocumentContext/ram:GuidelineSpecifiedDocumentContextParameter/ram:ID">
       <let name="codeValue1" value="."/>
-      <assert test="string-length($codeValue1)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=1]/enumeration[@value=$codeValue1]">
+      <assert test="string-length($codeValue1)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=1]/enumeration[@value=$codeValue1]">
 	Value of 'ram:ID' is not allowed.</assert>
       <report test="@schemeID">
 	Attribute @schemeID' marked as not used in the given context.</report>
@@ -852,8 +899,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;130&quot;]/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;130&quot;]/ram:IssuerAssignedID">
@@ -869,13 +916,13 @@
 	Element 'ram:Name' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;130&quot;]/ram:ReferenceTypeCode">
-      <let name="codeValue16" value="."/>
-      <assert test="string-length($codeValue16)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=16]/enumeration[@value=$codeValue16]">
+      <let name="codeValue20" value="."/>
+      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
 	Value of 'ram:ReferenceTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;130&quot;]/ram:TypeCode">
-      <let name="codeValue37" value="."/>
-      <assert test="string-length($codeValue37)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=37]/enumeration[@value=$codeValue37]">
+      <let name="codeValue40" value="."/>
+      <assert test="string-length($codeValue40)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=40]/enumeration[@value=$codeValue40]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;130&quot;]/ram:URIID">
@@ -895,8 +942,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;50&quot;]/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;50&quot;]/ram:IssuerAssignedID">
@@ -916,8 +963,8 @@
 	Element 'ram:ReferenceTypeCode' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;50&quot;]/ram:TypeCode">
-      <let name="codeValue36" value="."/>
-      <assert test="string-length($codeValue36)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=36]/enumeration[@value=$codeValue36]">
+      <let name="codeValue39" value="."/>
+      <assert test="string-length($codeValue39)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=39]/enumeration[@value=$codeValue39]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;50&quot;]/ram:URIID">
@@ -937,8 +984,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;916&quot;]/ram:AttachmentBinaryObject">
       <assert test="@mimeCode">
 	Attribute '@mimeCode' is required in this context.</assert>
-      <let name="codeValue15" value="@mimeCode"/>
-      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
+      <let name="codeValue19" value="@mimeCode"/>
+      <assert test="string-length($codeValue19)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=19]/enumeration[@value=$codeValue19]">
 	Value of '@mimeCode' is not allowed.</assert>
       <assert test="@filename">
 	Attribute '@filename' is required in this context.</assert>
@@ -946,8 +993,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;916&quot;]/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;916&quot;]/ram:IssuerAssignedID">
@@ -963,8 +1010,8 @@
 	Element 'ram:ReferenceTypeCode' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;916&quot;]/ram:TypeCode">
-      <let name="codeValue35" value="."/>
-      <assert test="string-length($codeValue35)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=35]/enumeration[@value=$codeValue35]">
+      <let name="codeValue38" value="."/>
+      <assert test="string-length($codeValue38)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=38]/enumeration[@value=$codeValue38]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument[ram:TypeCode=&quot;916&quot;]/ram:URIID">
@@ -976,13 +1023,13 @@
 	Element 'ram:DeliveryTypeCode' must occur exactly 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ApplicableTradeDeliveryTerms/ram:DeliveryTypeCode">
-      <let name="codeValue34" value="."/>
-      <assert test="string-length($codeValue34)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=34]/enumeration[@value=$codeValue34]">
+      <let name="codeValue36" value="."/>
+      <assert test="string-length($codeValue36)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=36]/enumeration[@value=$codeValue36]">
 	Value of 'ram:DeliveryTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ApplicableTradeDeliveryTerms/ram:RelevantTradeLocation/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty">
@@ -1032,8 +1079,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:ID">
@@ -1047,8 +1094,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1058,8 +1105,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -1069,8 +1116,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1098,8 +1145,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerAgentTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerOrderReferencedDocument">
@@ -1113,8 +1160,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerOrderReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerOrderReferencedDocument/ram:IssuerAssignedID">
@@ -1188,8 +1235,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:ID">
@@ -1203,8 +1250,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1214,8 +1261,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -1225,8 +1272,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1254,8 +1301,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTaxRepresentativeTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty">
@@ -1305,8 +1352,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:ID">
@@ -1320,8 +1367,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1331,8 +1378,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -1342,8 +1389,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1359,8 +1406,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedTaxRegistration/ram:ID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue32" value="@schemeID"/>
-      <assert test="string-length($codeValue32)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=32]/enumeration[@value=$codeValue32]">
+      <let name="codeValue34" value="@schemeID"/>
+      <assert test="string-length($codeValue34)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=34]/enumeration[@value=$codeValue34]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:URIUniversalCommunication">
@@ -1374,8 +1421,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ContractReferencedDocument">
@@ -1389,8 +1436,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ContractReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ContractReferencedDocument/ram:IssuerAssignedID">
@@ -1406,8 +1453,8 @@
 	Element 'ram:Name' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ContractReferencedDocument/ram:ReferenceTypeCode">
-      <let name="codeValue16" value="."/>
-      <assert test="string-length($codeValue16)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=16]/enumeration[@value=$codeValue16]">
+      <let name="codeValue37" value="."/>
+      <assert test="string-length($codeValue37)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=37]/enumeration[@value=$codeValue37]">
 	Value of 'ram:ReferenceTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ContractReferencedDocument/ram:TypeCode">
@@ -1465,8 +1512,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:ID">
@@ -1480,8 +1527,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1491,8 +1538,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -1502,8 +1549,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1531,8 +1578,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:ProductEndUserTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:QuotationReferencedDocument">
@@ -1546,8 +1593,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:QuotationReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:QuotationReferencedDocument/ram:IssuerAssignedID">
@@ -1621,8 +1668,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:ID">
@@ -1636,8 +1683,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1647,8 +1694,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -1658,8 +1705,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1687,8 +1734,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SalesAgentTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerOrderReferencedDocument">
@@ -1702,8 +1749,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerOrderReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerOrderReferencedDocument/ram:IssuerAssignedID">
@@ -1779,8 +1826,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:ID">
@@ -1794,8 +1841,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1805,8 +1852,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -1816,8 +1863,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1833,8 +1880,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedTaxRegistration/ram:ID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue33" value="@schemeID"/>
-      <assert test="string-length($codeValue33)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=33]/enumeration[@value=$codeValue33]">
+      <let name="codeValue35" value="@schemeID"/>
+      <assert test="string-length($codeValue35)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=35]/enumeration[@value=$codeValue35]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:URIUniversalCommunication">
@@ -1848,8 +1895,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty">
@@ -1899,8 +1946,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:ID">
@@ -1914,8 +1961,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1925,8 +1972,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -1936,8 +1983,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -1977,8 +2024,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SpecifiedProcuringProject/ram:ID">
@@ -1996,8 +2043,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:UltimateCustomerOrderReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:UltimateCustomerOrderReferencedDocument/ram:IssuerAssignedID">
@@ -2032,7 +2079,7 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:DeliveryNoteReferencedDocument">
@@ -2046,8 +2093,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:DeliveryNoteReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:DeliveryNoteReferencedDocument/ram:IssuerAssignedID">
@@ -2085,8 +2132,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:DespatchAdviceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:DespatchAdviceReferencedDocument/ram:IssuerAssignedID">
@@ -2124,8 +2171,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ReceivingAdviceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ReceivingAdviceReferencedDocument/ram:IssuerAssignedID">
@@ -2157,8 +2204,8 @@
 	Element 'ram:ModeCode' must occur exactly 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:RelatedSupplyChainConsignment/ram:SpecifiedLogisticsTransportMovement/ram:ModeCode">
-      <let name="codeValue38" value="."/>
-      <assert test="string-length($codeValue38)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=38]/enumeration[@value=$codeValue38]">
+      <let name="codeValue41" value="."/>
+      <assert test="string-length($codeValue41)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=41]/enumeration[@value=$codeValue41]">
 	Value of 'ram:ModeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty">
@@ -2206,8 +2253,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:ID">
@@ -2221,8 +2268,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2232,8 +2279,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -2243,8 +2290,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2272,8 +2319,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipFromTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty">
@@ -2321,8 +2368,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:ID">
@@ -2336,8 +2383,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2347,8 +2394,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -2358,8 +2405,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2387,8 +2434,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:ShipToTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty">
@@ -2436,8 +2483,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:ID">
@@ -2451,8 +2498,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2462,8 +2509,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -2473,8 +2520,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2502,8 +2549,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:UltimateShipToTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement">
@@ -2543,18 +2590,18 @@
 	Attribute @currencyID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode">
-      <let name="codeValue20" value="."/>
-      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
+      <let name="codeValue24" value="."/>
+      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
 	Value of 'ram:CategoryCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:DueDateTypeCode">
-      <let name="codeValue26" value="."/>
-      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
+      <let name="codeValue27" value="."/>
+      <assert test="string-length($codeValue27)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=27]/enumeration[@value=$codeValue27]">
 	Value of 'ram:DueDateTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode">
-      <let name="codeValue21" value="."/>
-      <assert test="string-length($codeValue21)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=21]/enumeration[@value=$codeValue21]">
+      <let name="codeValue25" value="."/>
+      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
 	Value of 'ram:ExemptionReasonCode' is not allowed.</assert>
       <report test="@listID">
 	Attribute @listID' marked as not used in the given context.</report>
@@ -2568,13 +2615,13 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:TaxPointDate/udt:DateString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue41" value="@format"/>
-      <assert test="string-length($codeValue41)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=41]/enumeration[@value=$codeValue41]">
+      <let name="codeValue44" value="@format"/>
+      <assert test="string-length($codeValue44)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=44]/enumeration[@value=$codeValue44]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax/ram:TypeCode">
-      <let name="codeValue25" value="."/>
-      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+      <let name="codeValue26" value="."/>
+      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:BillingSpecifiedPeriod">
@@ -2589,14 +2636,14 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:BillingSpecifiedPeriod/ram:StartDateTime/udt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:CreditorReferenceID">
@@ -2604,8 +2651,8 @@
 	Attribute @schemeID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceCurrencyCode">
-      <let name="codeValue39" value="."/>
-      <assert test="string-length($codeValue39)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=39]/enumeration[@value=$codeValue39]">
+      <let name="codeValue42" value="."/>
+      <assert test="string-length($codeValue42)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=42]/enumeration[@value=$codeValue42]">
 	Value of 'ram:InvoiceCurrencyCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceReferencedDocument/ram:AttachmentBinaryObject">
@@ -2615,8 +2662,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceReferencedDocument/ram:IssuerAssignedID">
@@ -2636,8 +2683,8 @@
 	Element 'ram:ReferenceTypeCode' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceReferencedDocument/ram:TypeCode">
-      <let name="codeValue46" value="."/>
-      <assert test="string-length($codeValue46)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=46]/enumeration[@value=$codeValue46]">
+      <let name="codeValue51" value="."/>
+      <assert test="string-length($codeValue51)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=51]/enumeration[@value=$codeValue51]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceReferencedDocument/ram:URIID">
@@ -2691,8 +2738,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:ID">
@@ -2706,8 +2753,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2717,8 +2764,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -2728,8 +2775,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2757,8 +2804,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceeTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty">
@@ -2808,8 +2855,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:ID">
@@ -2823,8 +2870,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2834,8 +2881,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -2845,8 +2892,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2874,8 +2921,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoicerTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty">
@@ -2925,8 +2972,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:ID">
@@ -2940,8 +2987,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2951,8 +2998,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -2962,8 +3009,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -2991,8 +3038,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty">
@@ -3042,8 +3089,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:ID">
@@ -3057,8 +3104,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -3068,8 +3115,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -3079,8 +3126,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -3108,8 +3155,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:PayerTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ReceivableSpecifiedTradeAccountingAccount/ram:ID">
@@ -3117,8 +3164,8 @@
 	Attribute @schemeID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ReceivableSpecifiedTradeAccountingAccount/ram:TypeCode">
-      <let name="codeValue47" value="."/>
-      <assert test="string-length($codeValue47)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=47]/enumeration[@value=$codeValue47]">
+      <let name="codeValue52" value="."/>
+      <assert test="string-length($codeValue52)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=52]/enumeration[@value=$codeValue52]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment">
@@ -3130,8 +3177,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:FormattedReceivedDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:IncludedTradeTax">
@@ -3155,8 +3202,8 @@
 	Attribute @currencyID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:IncludedTradeTax/ram:CategoryCode">
-      <let name="codeValue20" value="."/>
-      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
+      <let name="codeValue24" value="."/>
+      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
 	Value of 'ram:CategoryCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:IncludedTradeTax/ram:DueDateTypeCode">
@@ -3164,8 +3211,8 @@
 	Element 'ram:DueDateTypeCode' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:IncludedTradeTax/ram:ExemptionReasonCode">
-      <let name="codeValue21" value="."/>
-      <assert test="string-length($codeValue21)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=21]/enumeration[@value=$codeValue21]">
+      <let name="codeValue25" value="."/>
+      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
 	Value of 'ram:ExemptionReasonCode' is not allowed.</assert>
       <report test="@listID">
 	Attribute @listID' marked as not used in the given context.</report>
@@ -3181,8 +3228,8 @@
 	Element 'ram:TaxPointDate' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:IncludedTradeTax/ram:TypeCode">
-      <let name="codeValue25" value="."/>
-      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+      <let name="codeValue26" value="."/>
+      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:InvoiceSpecifiedReferencedDocument">
@@ -3196,8 +3243,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:InvoiceSpecifiedReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:InvoiceSpecifiedReferencedDocument/ram:IssuerAssignedID">
@@ -3217,8 +3264,8 @@
 	Element 'ram:ReferenceTypeCode' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:InvoiceSpecifiedReferencedDocument/ram:TypeCode">
-      <let name="codeValue48" value="."/>
-      <assert test="string-length($codeValue48)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=48]/enumeration[@value=$codeValue48]">
+      <let name="codeValue53" value="."/>
+      <assert test="string-length($codeValue53)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=53]/enumeration[@value=$codeValue53]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:InvoiceSpecifiedReferencedDocument/ram:URIID">
@@ -3226,6 +3273,16 @@
 	Element 'ram:URIID' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedAdvancePayment/ram:PaidAmount">
+      <report test="@currencyID">
+	Attribute @currencyID' marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedFinancialAdjustment">
+      <assert test="count(ram:Reason)=1">
+	Element 'ram:Reason' must occur exactly 1 times.</assert>
+      <assert test="count(ram:ActualAmount)=1">
+	Element 'ram:ActualAmount' must occur exactly 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedFinancialAdjustment/ram:ActualAmount">
       <report test="@currencyID">
 	Attribute @currencyID' marked as not used in the given context.</report>
     </rule>
@@ -3262,21 +3319,22 @@
 	Element 'ram:CalculatedAmount' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedTradeTax/ram:CategoryCode">
-      <let name="codeValue20" value="."/>
-      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
+      <let name="codeValue24" value="."/>
+      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
 	Value of 'ram:CategoryCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedTradeTax/ram:DueDateTypeCode">
       <report test="true()">
 	Element 'ram:DueDateTypeCode' is marked as not used in the given context.</report>
     </rule>
-    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedTradeTax/ram:ExemptionReason">
-      <report test="true()">
-	Element 'ram:ExemptionReason' is marked as not used in the given context.</report>
-    </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedTradeTax/ram:ExemptionReasonCode">
-      <report test="true()">
-	Element 'ram:ExemptionReasonCode' is marked as not used in the given context.</report>
+      <let name="codeValue48" value="."/>
+      <assert test="string-length($codeValue48)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=48]/enumeration[@value=$codeValue48]">
+	Value of 'ram:ExemptionReasonCode' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
+      <report test="@listVersionID">
+	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedTradeTax/ram:LineTotalBasisAmount">
       <report test="true()">
@@ -3287,8 +3345,8 @@
 	Element 'ram:TaxPointDate' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedLogisticsServiceCharge/ram:AppliedTradeTax/ram:TypeCode">
-      <let name="codeValue25" value="."/>
-      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+      <let name="codeValue26" value="."/>
+      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ not(ram:ChargeIndicator/udt:Indicator=&quot;false&quot;) and  not(ram:ChargeIndicator/udt:Indicator=&quot;true&quot;)]">
@@ -3312,8 +3370,8 @@
 	Attribute @currencyID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:BasisQuantity">
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:CategoryTradeTax">
@@ -3335,21 +3393,22 @@
 	Element 'ram:CalculatedAmount' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:CategoryTradeTax/ram:CategoryCode">
-      <let name="codeValue20" value="."/>
-      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
+      <let name="codeValue24" value="."/>
+      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
 	Value of 'ram:CategoryCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:CategoryTradeTax/ram:DueDateTypeCode">
       <report test="true()">
 	Element 'ram:DueDateTypeCode' is marked as not used in the given context.</report>
     </rule>
-    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:CategoryTradeTax/ram:ExemptionReason">
-      <report test="true()">
-	Element 'ram:ExemptionReason' is marked as not used in the given context.</report>
-    </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:CategoryTradeTax/ram:ExemptionReasonCode">
-      <report test="true()">
-	Element 'ram:ExemptionReasonCode' is marked as not used in the given context.</report>
+      <let name="codeValue25" value="."/>
+      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+	Value of 'ram:ExemptionReasonCode' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
+      <report test="@listVersionID">
+	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:CategoryTradeTax/ram:LineTotalBasisAmount">
       <report test="true()">
@@ -3360,14 +3419,16 @@
 	Element 'ram:TaxPointDate' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:CategoryTradeTax/ram:TypeCode">
-      <let name="codeValue25" value="."/>
-      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+      <let name="codeValue26" value="."/>
+      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:ReasonCode">
-      <let name="codeValue42" value="."/>
-      <assert test="string-length($codeValue42)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=42]/enumeration[@value=$codeValue42]">
+      <let name="codeValue45" value="."/>
+      <assert test="string-length($codeValue45)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=45]/enumeration[@value=$codeValue45]">
 	Value of 'ram:ReasonCode' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]">
       <assert test="count(ram:ChargeIndicator)=1">
@@ -3386,8 +3447,8 @@
 	Attribute @currencyID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:BasisQuantity">
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:CategoryTradeTax">
@@ -3409,21 +3470,22 @@
 	Element 'ram:CalculatedAmount' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:CategoryTradeTax/ram:CategoryCode">
-      <let name="codeValue20" value="."/>
-      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
+      <let name="codeValue24" value="."/>
+      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
 	Value of 'ram:CategoryCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:CategoryTradeTax/ram:DueDateTypeCode">
       <report test="true()">
 	Element 'ram:DueDateTypeCode' is marked as not used in the given context.</report>
     </rule>
-    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:CategoryTradeTax/ram:ExemptionReason">
-      <report test="true()">
-	Element 'ram:ExemptionReason' is marked as not used in the given context.</report>
-    </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:CategoryTradeTax/ram:ExemptionReasonCode">
-      <report test="true()">
-	Element 'ram:ExemptionReasonCode' is marked as not used in the given context.</report>
+      <let name="codeValue25" value="."/>
+      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+	Value of 'ram:ExemptionReasonCode' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
+      <report test="@listVersionID">
+	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:CategoryTradeTax/ram:LineTotalBasisAmount">
       <report test="true()">
@@ -3434,14 +3496,25 @@
 	Element 'ram:TaxPointDate' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:CategoryTradeTax/ram:TypeCode">
-      <let name="codeValue25" value="."/>
-      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+      <let name="codeValue26" value="."/>
+      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
-    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode">
-      <let name="codeValue43" value="."/>
-      <assert test="string-length($codeValue43)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=43]/enumeration[@value=$codeValue43]">
-	Value of 'ram:ReasonCode' is not allowed.</assert>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[ not(not (@listID)) and  not(@listID=&quot;5153&quot;)]">
+      <report test="true()">
+	Element variant 'ram:ReasonCode[ not(not (@listID)) and  not(@listID="5153")]' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[@listID=&quot;5153&quot;]">
+      <let name="codeValue47" value="."/>
+      <assert test="string-length($codeValue47)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=47]/enumeration[@value=$codeValue47]">
+	Value of 'ram:ReasonCode[@listID="5153"]' is not allowed.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[not (@listID)]">
+      <let name="codeValue46" value="."/>
+      <assert test="string-length($codeValue46)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=46]/enumeration[@value=$codeValue46]">
+	Value of 'ram:ReasonCode[not (@listID)]' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms">
       <assert test="count(ram:Description)&lt;=1">
@@ -3465,7 +3538,7 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:ApplicableTradePaymentPenaltyTerms/ram:ActualPenaltyAmount">
@@ -3480,7 +3553,7 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:ApplicableTradePaymentPenaltyTerms/ram:BasisPeriodMeasure">
@@ -3495,7 +3568,7 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PartialPaymentAmount">
@@ -3549,8 +3622,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:ID">
@@ -3564,8 +3637,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -3575,8 +3648,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -3586,8 +3659,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -3615,8 +3688,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:PayeeTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation">
@@ -3674,13 +3747,13 @@
 	Element variant 'ram:TaxTotalAmount[ not(@currencyID=../../ram:InvoiceCurrencyCode) and  not(@currencyID=../../ram:TaxCurrencyCode)]' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount[@currencyID=../../ram:InvoiceCurrencyCode]">
-      <let name="codeValue44" value="@currencyID"/>
-      <assert test="string-length($codeValue44)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=44]/enumeration[@value=$codeValue44]">
+      <let name="codeValue49" value="@currencyID"/>
+      <assert test="string-length($codeValue49)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=49]/enumeration[@value=$codeValue49]">
 	Value of '@currencyID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount[@currencyID=../../ram:TaxCurrencyCode]">
-      <let name="codeValue45" value="@currencyID"/>
-      <assert test="string-length($codeValue45)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=45]/enumeration[@value=$codeValue45]">
+      <let name="codeValue50" value="@currencyID"/>
+      <assert test="string-length($codeValue50)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=50]/enumeration[@value=$codeValue50]">
 	Value of '@currencyID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TotalPrepaidAmount">
@@ -3727,31 +3800,35 @@
       <report test="@schemeID">
 	Attribute @schemeID' marked as not used in the given context.</report>
     </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayerSpecifiedDebtorFinancialInstitution/ram:BICID">
+      <report test="@schemeID">
+	Attribute @schemeID' marked as not used in the given context.</report>
+    </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementPaymentMeans/ram:TypeCode">
-      <let name="codeValue40" value="."/>
-      <assert test="string-length($codeValue40)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=40]/enumeration[@value=$codeValue40]">
+      <let name="codeValue43" value="."/>
+      <assert test="string-length($codeValue43)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=43]/enumeration[@value=$codeValue43]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:TaxApplicableTradeCurrencyExchange/ram:ConversionRateDateTime/udt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:TaxApplicableTradeCurrencyExchange/ram:SourceCurrencyCode">
-      <let name="codeValue39" value="."/>
-      <assert test="string-length($codeValue39)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=39]/enumeration[@value=$codeValue39]">
+      <let name="codeValue42" value="."/>
+      <assert test="string-length($codeValue42)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=42]/enumeration[@value=$codeValue42]">
 	Value of 'ram:SourceCurrencyCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:TaxApplicableTradeCurrencyExchange/ram:TargetCurrencyCode">
-      <let name="codeValue39" value="."/>
-      <assert test="string-length($codeValue39)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=39]/enumeration[@value=$codeValue39]">
+      <let name="codeValue42" value="."/>
+      <assert test="string-length($codeValue42)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=42]/enumeration[@value=$codeValue42]">
 	Value of 'ram:TargetCurrencyCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:TaxCurrencyCode">
-      <let name="codeValue39" value="."/>
-      <assert test="string-length($codeValue39)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=39]/enumeration[@value=$codeValue39]">
+      <let name="codeValue42" value="."/>
+      <assert test="string-length($codeValue42)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=42]/enumeration[@value=$codeValue42]">
 	Value of 'ram:TaxCurrencyCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem">
@@ -3777,8 +3854,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument/ram:IncludedNote/ram:SubjectCode">
-      <let name="codeValue4" value="."/>
-      <assert test="string-length($codeValue4)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=4]/enumeration[@value=$codeValue4]">
+      <let name="codeValue5" value="."/>
+      <assert test="string-length($codeValue5)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=5]/enumeration[@value=$codeValue5]">
 	Value of 'ram:SubjectCode' is not allowed.</assert>
       <report test="@listID">
 	Attribute @listID' marked as not used in the given context.</report>
@@ -3790,13 +3867,13 @@
 	Attribute @schemeID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument/ram:LineStatusCode">
-      <let name="codeValue5" value="."/>
-      <assert test="string-length($codeValue5)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=5]/enumeration[@value=$codeValue5]">
+      <let name="codeValue6" value="."/>
+      <assert test="string-length($codeValue6)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=6]/enumeration[@value=$codeValue6]">
 	Value of 'ram:LineStatusCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument/ram:LineStatusReasonCode">
-      <let name="codeValue6" value="."/>
-      <assert test="string-length($codeValue6)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=6]/enumeration[@value=$codeValue6]">
+      <let name="codeValue7" value="."/>
+      <assert test="string-length($codeValue7)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=7]/enumeration[@value=$codeValue7]">
 	Value of 'ram:LineStatusReasonCode' is not allowed.</assert>
       <report test="@listID">
 	Attribute @listID' marked as not used in the given context.</report>
@@ -3820,8 +3897,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:AdditionalReferencedDocument/ram:AttachmentBinaryObject">
       <assert test="@mimeCode">
 	Attribute '@mimeCode' is required in this context.</assert>
-      <let name="codeValue15" value="@mimeCode"/>
-      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
+      <let name="codeValue19" value="@mimeCode"/>
+      <assert test="string-length($codeValue19)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=19]/enumeration[@value=$codeValue19]">
 	Value of '@mimeCode' is not allowed.</assert>
       <assert test="@filename">
 	Attribute '@filename' is required in this context.</assert>
@@ -3829,8 +3906,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:AdditionalReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:AdditionalReferencedDocument/ram:IssuerAssignedID">
@@ -3842,13 +3919,13 @@
 	Attribute @schemeID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:AdditionalReferencedDocument/ram:ReferenceTypeCode">
-      <let name="codeValue16" value="."/>
-      <assert test="string-length($codeValue16)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=16]/enumeration[@value=$codeValue16]">
+      <let name="codeValue20" value="."/>
+      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
 	Value of 'ram:ReferenceTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:AdditionalReferencedDocument/ram:TypeCode">
-      <let name="codeValue14" value="."/>
-      <assert test="string-length($codeValue14)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=14]/enumeration[@value=$codeValue14]">
+      <let name="codeValue18" value="."/>
+      <assert test="string-length($codeValue18)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=18]/enumeration[@value=$codeValue18]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:AdditionalReferencedDocument/ram:URIID">
@@ -3860,13 +3937,13 @@
 	Element 'ram:DeliveryTypeCode' must occur exactly 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ApplicableTradeDeliveryTerms/ram:DeliveryTypeCode">
-      <let name="codeValue12" value="."/>
-      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
+      <let name="codeValue16" value="."/>
+      <assert test="string-length($codeValue16)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=16]/enumeration[@value=$codeValue16]">
 	Value of 'ram:DeliveryTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ApplicableTradeDeliveryTerms/ram:RelevantTradeLocation/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:BuyerOrderReferencedDocument/ram:AttachmentBinaryObject">
@@ -3876,8 +3953,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:BuyerOrderReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:BuyerOrderReferencedDocument/ram:IssuerAssignedID">
@@ -3911,8 +3988,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ContractReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ContractReferencedDocument/ram:IssuerAssignedID">
@@ -3970,9 +4047,11 @@
 	Element 'ram:CategoryTradeTax' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:ReasonCode">
-      <let name="codeValue17" value="."/>
-      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
+      <let name="codeValue21" value="."/>
+      <assert test="string-length($codeValue21)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=21]/enumeration[@value=$codeValue21]">
 	Value of 'ram:ReasonCode' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:SequenceNumeric">
       <report test="true()">
@@ -4000,18 +4079,26 @@
       <report test="true()">
 	Element 'ram:CategoryTradeTax' is marked as not used in the given context.</report>
     </rule>
-    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode">
-      <let name="codeValue18" value="."/>
-      <assert test="string-length($codeValue18)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=18]/enumeration[@value=$codeValue18]">
-	Value of 'ram:ReasonCode' is not allowed.</assert>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[ not(@listID=&quot;5153&quot;) and  not(not (@listID))]">
+      <report test="true()">
+	Element variant 'ram:ReasonCode[ not(@listID="5153") and  not(not (@listID))]' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[@listID=&quot;5153&quot;]">
+      <let name="codeValue22" value="."/>
+      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+	Value of 'ram:ReasonCode[@listID="5153"]' is not allowed.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[not (@listID)]">
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:SequenceNumeric">
       <report test="true()">
 	Element 'ram:SequenceNumeric' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:BasisQuantity">
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:GrossPriceProductTradePrice/ram:ChargeAmount">
@@ -4065,8 +4152,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ItemSellerTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ItemSellerTradeParty/ram:ID">
@@ -4080,8 +4167,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ItemSellerTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ItemSellerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -4091,8 +4178,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ItemSellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ItemSellerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -4130,8 +4217,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:ItemSellerTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice">
@@ -4145,8 +4232,8 @@
 	Element 'ram:AppliedTradeAllowanceCharge' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:BasisQuantity">
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount">
@@ -4176,8 +4263,8 @@
 	Attribute @currencyID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:IncludedTradeTax/ram:CategoryCode">
-      <let name="codeValue20" value="."/>
-      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
+      <let name="codeValue24" value="."/>
+      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
 	Value of 'ram:CategoryCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:IncludedTradeTax/ram:DueDateTypeCode">
@@ -4185,8 +4272,8 @@
 	Element 'ram:DueDateTypeCode' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:IncludedTradeTax/ram:ExemptionReasonCode">
-      <let name="codeValue21" value="."/>
-      <assert test="string-length($codeValue21)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=21]/enumeration[@value=$codeValue21]">
+      <let name="codeValue25" value="."/>
+      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
 	Value of 'ram:ExemptionReasonCode' is not allowed.</assert>
       <report test="@listID">
 	Attribute @listID' marked as not used in the given context.</report>
@@ -4202,8 +4289,8 @@
 	Element 'ram:TaxPointDate' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:IncludedTradeTax/ram:TypeCode">
-      <let name="codeValue19" value="."/>
-      <assert test="string-length($codeValue19)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=19]/enumeration[@value=$codeValue19]">
+      <let name="codeValue23" value="."/>
+      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:QuotationReferencedDocument/ram:AttachmentBinaryObject">
@@ -4213,8 +4300,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:QuotationReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:QuotationReferencedDocument/ram:IssuerAssignedID">
@@ -4248,8 +4335,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:SellerOrderReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:SellerOrderReferencedDocument/ram:IssuerAssignedID">
@@ -4283,8 +4370,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:UltimateCustomerOrderReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeAgreement/ram:UltimateCustomerOrderReferencedDocument/ram:IssuerAssignedID">
@@ -4319,19 +4406,19 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity">
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ChargeFreeQuantity">
       <assert test="@unitCode">
 	Attribute '@unitCode' is required in this context.</assert>
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:DeliveryNoteReferencedDocument/ram:AttachmentBinaryObject">
@@ -4341,8 +4428,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:DeliveryNoteReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:DeliveryNoteReferencedDocument/ram:IssuerAssignedID">
@@ -4376,8 +4463,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:DespatchAdviceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:DespatchAdviceReferencedDocument/ram:IssuerAssignedID">
@@ -4407,15 +4494,15 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:PackageQuantity">
       <assert test="@unitCode">
 	Attribute '@unitCode' is required in this context.</assert>
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:PerPackageUnitQuantity">
       <assert test="@unitCode">
 	Attribute '@unitCode' is required in this context.</assert>
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ReceivingAdviceReferencedDocument/ram:AttachmentBinaryObject">
@@ -4425,8 +4512,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ReceivingAdviceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ReceivingAdviceReferencedDocument/ram:IssuerAssignedID">
@@ -4498,8 +4585,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty/ram:ID">
@@ -4513,8 +4600,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -4526,8 +4613,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -4553,8 +4640,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty">
@@ -4602,8 +4689,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue22" value="@schemeID"/>
-      <assert test="string-length($codeValue22)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=22]/enumeration[@value=$codeValue22]">
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty/ram:ID">
@@ -4617,8 +4704,8 @@
 	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty/ram:PostalTradeAddress/ram:CountryID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:CountryID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
@@ -4628,8 +4715,8 @@
 	Attribute @listVersionID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
-      <let name="codeValue23" value="@schemeID"/>
-      <assert test="string-length($codeValue23)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=23]/enumeration[@value=$codeValue23]">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
@@ -4655,13 +4742,11 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeDelivery/ram:UltimateShipToTradeParty/ram:URIUniversalCommunication/ram:URIID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue24" value="@schemeID"/>
-      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement">
-      <assert test="count(ram:SpecifiedTradeSettlementLineMonetarySummation)=1">
-	Element 'ram:SpecifiedTradeSettlementLineMonetarySummation' must occur exactly 1 times.</assert>
       <assert test="count(ram:InvoiceReferencedDocument)&lt;=1">
 	Element 'ram:InvoiceReferencedDocument' may occur at maximum 1 times.</assert>
     </rule>
@@ -4692,13 +4777,13 @@
 	Element 'ram:Name' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:AdditionalReferencedDocument/ram:ReferenceTypeCode">
-      <let name="codeValue16" value="."/>
-      <assert test="string-length($codeValue16)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=16]/enumeration[@value=$codeValue16]">
+      <let name="codeValue20" value="."/>
+      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
 	Value of 'ram:ReferenceTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:AdditionalReferencedDocument/ram:TypeCode">
-      <let name="codeValue14" value="."/>
-      <assert test="string-length($codeValue14)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=14]/enumeration[@value=$codeValue14]">
+      <let name="codeValue18" value="."/>
+      <assert test="string-length($codeValue18)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=18]/enumeration[@value=$codeValue18]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:AdditionalReferencedDocument/ram:URIID">
@@ -4726,18 +4811,18 @@
 	Attribute @currencyID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode">
-      <let name="codeValue20" value="."/>
-      <assert test="string-length($codeValue20)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=20]/enumeration[@value=$codeValue20]">
+      <let name="codeValue24" value="."/>
+      <assert test="string-length($codeValue24)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=24]/enumeration[@value=$codeValue24]">
 	Value of 'ram:CategoryCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:DueDateTypeCode">
-      <let name="codeValue26" value="."/>
-      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
+      <let name="codeValue27" value="."/>
+      <assert test="string-length($codeValue27)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=27]/enumeration[@value=$codeValue27]">
 	Value of 'ram:DueDateTypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:ExemptionReasonCode">
-      <let name="codeValue21" value="."/>
-      <assert test="string-length($codeValue21)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=21]/enumeration[@value=$codeValue21]">
+      <let name="codeValue25" value="."/>
+      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
 	Value of 'ram:ExemptionReasonCode' is not allowed.</assert>
       <report test="@listID">
 	Attribute @listID' marked as not used in the given context.</report>
@@ -4753,8 +4838,8 @@
 	Element 'ram:TaxPointDate' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:TypeCode">
-      <let name="codeValue25" value="."/>
-      <assert test="string-length($codeValue25)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=25]/enumeration[@value=$codeValue25]">
+      <let name="codeValue26" value="."/>
+      <assert test="string-length($codeValue26)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=26]/enumeration[@value=$codeValue26]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:CompleteDateTime">
@@ -4769,14 +4854,14 @@
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:StartDateTime/udt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
       <let name="codeValue3" value="@format"/>
-      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
+      <assert test="string-length($codeValue3)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=3]/enumeration[@value=$codeValue3]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:InvoiceReferencedDocument/ram:AttachmentBinaryObject">
@@ -4786,8 +4871,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString">
       <assert test="@format">
 	Attribute '@format' is required in this context.</assert>
-      <let name="codeValue13" value="@format"/>
-      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+      <let name="codeValue17" value="@format"/>
+      <assert test="string-length($codeValue17)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=17]/enumeration[@value=$codeValue17]">
 	Value of '@format' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:InvoiceReferencedDocument/ram:IssuerAssignedID">
@@ -4807,8 +4892,8 @@
 	Element 'ram:ReferenceTypeCode' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:InvoiceReferencedDocument/ram:TypeCode">
-      <let name="codeValue31" value="."/>
-      <assert test="string-length($codeValue31)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=31]/enumeration[@value=$codeValue31]">
+      <let name="codeValue33" value="."/>
+      <assert test="string-length($codeValue33)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=33]/enumeration[@value=$codeValue33]">
 	Value of 'ram:TypeCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:InvoiceReferencedDocument/ram:URIID">
@@ -4846,9 +4931,11 @@
 	Element 'ram:CategoryTradeTax' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:ReasonCode">
-      <let name="codeValue27" value="."/>
-      <assert test="string-length($codeValue27)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=27]/enumeration[@value=$codeValue27]">
+      <let name="codeValue28" value="."/>
+      <assert test="string-length($codeValue28)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=28]/enumeration[@value=$codeValue28]">
 	Value of 'ram:ReasonCode' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;false&quot;]/ram:SequenceNumeric">
       <report test="true()">
@@ -4876,18 +4963,29 @@
       <report test="true()">
 	Element 'ram:CategoryTradeTax' is marked as not used in the given context.</report>
     </rule>
-    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode">
-      <let name="codeValue28" value="."/>
-      <assert test="string-length($codeValue28)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=28]/enumeration[@value=$codeValue28]">
-	Value of 'ram:ReasonCode' is not allowed.</assert>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[ not(not (@listID)) and  not(@listID=&quot;5153&quot;)]">
+      <report test="true()">
+	Element variant 'ram:ReasonCode[ not(not (@listID)) and  not(@listID="5153")]' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[@listID=&quot;5153&quot;]">
+      <let name="codeValue30" value="."/>
+      <assert test="string-length($codeValue30)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=30]/enumeration[@value=$codeValue30]">
+	Value of 'ram:ReasonCode[@listID="5153"]' is not allowed.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:ReasonCode[not (@listID)]">
+      <let name="codeValue29" value="."/>
+      <assert test="string-length($codeValue29)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=29]/enumeration[@value=$codeValue29]">
+	Value of 'ram:ReasonCode[not (@listID)]' is not allowed.</assert>
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge[ram:ChargeIndicator/udt:Indicator=&quot;true&quot;]/ram:SequenceNumeric">
       <report test="true()">
 	Element 'ram:SequenceNumeric' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation">
-      <assert test="count(ram:LineTotalAmount)=1">
-	Element 'ram:LineTotalAmount' must occur exactly 1 times.</assert>
+      <assert test="count(ram:LineTotalAmount)&lt;=1">
+	Element 'ram:LineTotalAmount' may occur at maximum 1 times.</assert>
       <assert test="count(ram:ChargeTotalAmount)&lt;=1">
 	Element 'ram:ChargeTotalAmount' may occur at maximum 1 times.</assert>
       <assert test="count(ram:AllowanceTotalAmount)&lt;=1">
@@ -4922,13 +5020,13 @@
 	Element variant 'ram:TaxTotalAmount[ not(@currencyID=/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceCurrencyCode) and  not(@currencyID=/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:TaxCurrencyCode)]' is marked as not used in the given context.</report>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:TaxTotalAmount[@currencyID=/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceCurrencyCode]">
-      <let name="codeValue29" value="@currencyID"/>
-      <assert test="string-length($codeValue29)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=29]/enumeration[@value=$codeValue29]">
+      <let name="codeValue31" value="@currencyID"/>
+      <assert test="string-length($codeValue31)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=31]/enumeration[@value=$codeValue31]">
 	Value of '@currencyID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:TaxTotalAmount[@currencyID=/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:TaxCurrencyCode]">
-      <let name="codeValue30" value="@currencyID"/>
-      <assert test="string-length($codeValue30)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=30]/enumeration[@value=$codeValue30]">
+      <let name="codeValue32" value="@currencyID"/>
+      <assert test="string-length($codeValue32)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=32]/enumeration[@value=$codeValue32]">
 	Value of '@currencyID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:TotalAllowanceChargeAmount">
@@ -4942,10 +5040,10 @@
 	Element 'ram:Description' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ApplicableProductCharacteristic">
-      <assert test="count(ram:Description)=1">
-	Element 'ram:Description' must occur exactly 1 times.</assert>
-      <assert test="count(ram:Value)=1">
-	Element 'ram:Value' must occur exactly 1 times.</assert>
+      <assert test="count(ram:Description)&lt;=1">
+	Element 'ram:Description' may occur at maximum 1 times.</assert>
+      <assert test="count(ram:Value)&lt;=1">
+	Element 'ram:Value' may occur at maximum 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ApplicableProductCharacteristic/ram:TypeCode">
       <report test="@listID">
@@ -4968,15 +5066,15 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:DesignatedProductClassification/ram:ClassCode">
       <assert test="@listID">
 	Attribute '@listID' is required in this context.</assert>
-      <let name="codeValue8" value="@listID"/>
-      <assert test="string-length($codeValue8)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=8]/enumeration[@value=$codeValue8]">
+      <let name="codeValue9" value="@listID"/>
+      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
 	Value of '@listID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue7" value="@schemeID"/>
-      <assert test="string-length($codeValue7)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=7]/enumeration[@value=$codeValue7]">
+      <let name="codeValue8" value="@schemeID"/>
+      <assert test="string-length($codeValue8)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=8]/enumeration[@value=$codeValue8]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ID">
@@ -5002,8 +5100,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:IncludedReferencedProduct/ram:GlobalID">
       <assert test="@schemeID">
 	Attribute '@schemeID' is required in this context.</assert>
-      <let name="codeValue10" value="@schemeID"/>
-      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
+      <let name="codeValue14" value="@schemeID"/>
+      <assert test="string-length($codeValue14)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=14]/enumeration[@value=$codeValue14]">
 	Value of '@schemeID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:IncludedReferencedProduct/ram:ID">
@@ -5021,8 +5119,8 @@
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:IncludedReferencedProduct/ram:UnitQuantity">
       <assert test="@unitCode">
 	Attribute '@unitCode' is required in this context.</assert>
-      <let name="codeValue11" value="@unitCode"/>
-      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+      <let name="codeValue15" value="@unitCode"/>
+      <assert test="string-length($codeValue15)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=15]/enumeration[@value=$codeValue15]">
 	Value of '@unitCode' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:IndividualTradeProductInstance/ram:BatchID">
@@ -5037,6 +5135,118 @@
       <report test="@schemeID">
 	Attribute @schemeID' marked as not used in the given context.</report>
     </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty">
+      <assert test="count(ram:RoleCode)&lt;=1">
+	Element 'ram:RoleCode' may occur at maximum 1 times.</assert>
+      <assert test="count(ram:Description)&lt;=1">
+	Element 'ram:Description' may occur at maximum 1 times.</assert>
+      <assert test="count(ram:URIUniversalCommunication)&lt;=1">
+	Element 'ram:URIUniversalCommunication' may occur at maximum 1 times.</assert>
+      <assert test="count(ram:SpecifiedTaxRegistration[ram:ID/@schemeID=&quot;VA&quot;])&lt;=2">
+	Element variant 'ram:SpecifiedTaxRegistration[ram:ID/@schemeID="VA"]' may occur at maximum 2 times.</assert>
+      <assert test="count(ram:SpecifiedTaxRegistration[ram:ID/@schemeID=&quot;FC&quot;])&lt;=2">
+	Element variant 'ram:SpecifiedTaxRegistration[ram:ID/@schemeID="FC"]' may occur at maximum 2 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:DefinedTradeContact/ram:EmailURIUniversalCommunication">
+      <assert test="count(ram:URIID)=1">
+	Element 'ram:URIID' must occur exactly 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:DefinedTradeContact/ram:EmailURIUniversalCommunication/ram:CompleteNumber">
+      <report test="true()">
+	Element 'ram:CompleteNumber' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:DefinedTradeContact/ram:EmailURIUniversalCommunication/ram:URIID">
+      <report test="@schemeID">
+	Attribute @schemeID' marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:DefinedTradeContact/ram:FaxUniversalCommunication">
+      <assert test="count(ram:CompleteNumber)=1">
+	Element 'ram:CompleteNumber' must occur exactly 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:DefinedTradeContact/ram:FaxUniversalCommunication/ram:URIID">
+      <report test="true()">
+	Element 'ram:URIID' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:DefinedTradeContact/ram:TelephoneUniversalCommunication">
+      <assert test="count(ram:CompleteNumber)=1">
+	Element 'ram:CompleteNumber' must occur exactly 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:DefinedTradeContact/ram:TelephoneUniversalCommunication/ram:URIID">
+      <report test="true()">
+	Element 'ram:URIID' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:GlobalID">
+      <assert test="@schemeID">
+	Attribute '@schemeID' is required in this context.</assert>
+      <let name="codeValue11" value="@schemeID"/>
+      <assert test="string-length($codeValue11)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=11]/enumeration[@value=$codeValue11]">
+	Value of '@schemeID' is not allowed.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:ID">
+      <report test="@schemeID">
+	Attribute @schemeID' marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:PostalTradeAddress">
+      <assert test="count(ram:CountryID)=1">
+	Element 'ram:CountryID' must occur exactly 1 times.</assert>
+      <assert test="count(ram:CountrySubDivisionName)&lt;=1">
+	Element 'ram:CountrySubDivisionName' may occur at maximum 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:PostalTradeAddress/ram:CountryID">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
+	Value of 'ram:CountryID' is not allowed.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode">
+      <report test="@listID">
+	Attribute @listID' marked as not used in the given context.</report>
+      <report test="@listVersionID">
+	Attribute @listVersionID' marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:SpecifiedLegalOrganization/ram:ID">
+      <let name="codeValue12" value="@schemeID"/>
+      <assert test="string-length($codeValue12)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=12]/enumeration[@value=$codeValue12]">
+	Value of '@schemeID' is not allowed.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:SpecifiedLegalOrganization/ram:PostalTradeAddress">
+      <report test="true()">
+	Element 'ram:PostalTradeAddress' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:SpecifiedTaxRegistration[ not(ram:ID/@schemeID=&quot;VA&quot;) and  not(ram:ID/@schemeID=&quot;FC&quot;)]">
+      <report test="true()">
+	Element variant 'ram:SpecifiedTaxRegistration[ not(ram:ID/@schemeID="VA") and  not(ram:ID/@schemeID="FC")]' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:SpecifiedTaxRegistration[ram:ID/@schemeID=&quot;FC&quot;]">
+      <assert test="count(ram:ID)=1">
+	Element 'ram:ID' must occur exactly 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:SpecifiedTaxRegistration[ram:ID/@schemeID=&quot;FC&quot;]/ram:ID">
+      <assert test="@schemeID">
+	Attribute '@schemeID' is required in this context.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:SpecifiedTaxRegistration[ram:ID/@schemeID=&quot;VA&quot;]">
+      <assert test="count(ram:ID)=1">
+	Element 'ram:ID' must occur exactly 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:SpecifiedTaxRegistration[ram:ID/@schemeID=&quot;VA&quot;]/ram:ID">
+      <assert test="@schemeID">
+	Attribute '@schemeID' is required in this context.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:URIUniversalCommunication">
+      <assert test="count(ram:URIID)=1">
+	Element 'ram:URIID' must occur exactly 1 times.</assert>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:URIUniversalCommunication/ram:CompleteNumber">
+      <report test="true()">
+	Element 'ram:CompleteNumber' is marked as not used in the given context.</report>
+    </rule>
+    <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ManufacturerTradeParty/ram:URIUniversalCommunication/ram:URIID">
+      <assert test="@schemeID">
+	Attribute '@schemeID' is required in this context.</assert>
+      <let name="codeValue13" value="@schemeID"/>
+      <assert test="string-length($codeValue13)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=13]/enumeration[@value=$codeValue13]">
+	Value of '@schemeID' is not allowed.</assert>
+    </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:ModelID">
       <report test="@schemeID">
 	Attribute @schemeID' marked as not used in the given context.</report>
@@ -5046,8 +5256,8 @@
 	Element 'ram:ID' must occur exactly 1 times.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:OriginTradeCountry/ram:ID">
-      <let name="codeValue9" value="."/>
-      <assert test="string-length($codeValue9)=0 or document(&apos;Factur-X_1.08_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=9]/enumeration[@value=$codeValue9]">
+      <let name="codeValue10" value="."/>
+      <assert test="string-length($codeValue10)=0 or document(&apos;Factur-X_1.09_EXTENDED_codedb.xml&apos;)/codedb/cl[@id=10]/enumeration[@value=$codeValue10]">
 	Value of 'ram:ID' is not allowed.</assert>
     </rule>
     <rule context="/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:SellerAssignedID">
