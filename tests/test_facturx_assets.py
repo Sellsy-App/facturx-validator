@@ -62,3 +62,38 @@ def test_schematron_xslt_compiles_and_runs():
             result = result.read_text(encoding="utf-8")
         # Le transform doit produire un rapport SVRL bien formé.
         assert "schematron-output" in result
+
+
+# --- Règles France BR-FR (réforme CTC, XP Z12-012 / FNFE v1.4.0) ---
+
+EXPECTED_BR_FR_ASSETS = [
+    "BR-FR-Flux2-Schematron-CII.sch",
+    "BR-FR-Flux2-Schematron-CII.xslt",
+]
+
+BR_FR_DIR = Path(fv.__file__).parent / "data" / "br_fr_ctc"
+
+
+def test_br_fr_assets_present():
+    for name in EXPECTED_BR_FR_ASSETS:
+        assert (BR_FR_DIR / name).is_file(), f"asset BR-FR manquant : {name}"
+
+
+def test_br_fr_xslt_is_in_schematron_pipeline():
+    # Les deux feuilles (Factur-X EN16931 + BR-FR) doivent être appliquées.
+    assert fv.BR_FR_XSLT_PATH in fv.SCHEMATRON_XSLT_PATHS
+    assert fv.XSLT_PATH in fv.SCHEMATRON_XSLT_PATHS
+
+
+def test_br_fr_rules_are_detected():
+    """Un XML minimal doit déclencher au moins une règle BR-FR fatale,
+    prouvant que le Schématron France est bien exécuté par le pipeline."""
+    pytest.importorskip("saxonche")
+    stub = (
+        '<rsm:CrossIndustryInvoice '
+        'xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"/>'
+    )
+    errors, _ = fv._collect_schematron(stub, xslt_paths=[fv.BR_FR_XSLT_PATH])
+    assert any("BR-FR" in (e.get("message") or "") for e in errors), (
+        "aucune règle BR-FR déclenchée : le Schématron France ne s'exécute pas"
+    )

@@ -21,7 +21,8 @@ packages = [
   "facturx_validator",
   "facturx_validator.data",
   "facturx_validator.data.factur_x_extended",
-  "facturx_validator.data.factur_x_extended._XSLT_EXTENDED"
+  "facturx_validator.data.factur_x_extended._XSLT_EXTENDED",
+  "facturx_validator.data.br_fr_ctc"
 ]
 
 [tool.setuptools.package-data]
@@ -29,5 +30,7 @@ packages = [
   "data/factur_x_extended/*.xsd",
   "data/factur_x_extended/*.sch",
   "data/factur_x_extended/_XSLT_EXTENDED/*.xslt",
-  "data/factur_x_extended/_XSLT_EXTENDED/*.xml"
+  "data/factur_x_extended/_XSLT_EXTENDED/*.xml",
+  "data/br_fr_ctc/*.sch",
+  "data/br_fr_ctc/*.xslt"
 ]

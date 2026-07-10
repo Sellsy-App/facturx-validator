@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Python package for validating Factur-X PDF invoices (European e-invoicing standard). Performs two-stage validation: XSD schema validation (structural) and Schematron validation (business rules) using XSLT 3.0. Currently supports **Factur-X 1.09 EXTENDED** profile.
 
+Schematron validation runs **two** stylesheets over the same XML and merges the results: the EN16931/Factur-X rules, plus the **French CTC rules (BR-FR)** from the FNFE-MPE package `SCHEMATRONS_FR_CTC v1.4.0` (norme AFNOR XP Z12-012). The BR-FR rules add French mandate requirements (e.g. `BR-FR-02` invoice id charset, `BR-FR-05` mandatory legal notes PMT/PMD/AAB, `BR-FR-08` billing mode, `BR-FR-13` seller endpoint) and reproduce what the FNFE online validator reports.
+
 ## Commands
 
 ```bash
@@ -30,8 +32,12 @@ facturx-validator <path_to_pdf> --json
   - `validate_xml(xml_str)` — XSD schema validation, returns human-readable string
   - `validate_schematron(xml_str)` — Schematron business rules via SaxonC XSLT 3.0, parses SVRL output
   - `validate_all(xml_str)` — Combined validation returning structured dict with `xsd_errors`, `xsd_warnings`, `schematron_errors`, `schematron_warnings` (each entry has `message`, `field`, and optionally `location`)
+  - `_collect_schematron(xml_str, xslt_paths=SCHEMATRON_XSLT_PATHS)` — shared helper: runs every stylesheet in `SCHEMATRON_XSLT_PATHS` under a single SaxonC processor and aggregates SVRL failed-asserts (errors) / successful-reports (warnings). `SCHEMATRON_XSLT_PATHS = [XSLT_PATH, BR_FR_XSLT_PATH]`.
 - `facturx_validator/cli.py` — argparse CLI entry point, supports `--json` output
-- `facturx_validator/data/factur_x_extended/` — Bundled XSD schemas and Schematron XSLT files (v1.09)
+- `facturx_validator/data/factur_x_extended/` — Bundled XSD schemas and Factur-X Schematron XSLT files (v1.09)
+- `facturx_validator/data/br_fr_ctc/` — Bundled French CTC Schematron (`.sch` source + compiled `.xslt`), FNFE v1.4.0
+
+To bump the BR-FR rules, replace the files in `data/br_fr_ctc/` with the newer `Factur-X_1.09/EXTENDED` stylesheet from the FNFE package (the `.xslt` in its `2xslt/` folder is self-contained — no external `codedb`/`document()` dependency).
 
 ### Dependencies
 
