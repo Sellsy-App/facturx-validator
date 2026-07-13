@@ -69,6 +69,8 @@ def test_schematron_xslt_compiles_and_runs():
 EXPECTED_BR_FR_ASSETS = [
     "BR-FR-Flux2-Schematron-CII.sch",
     "BR-FR-Flux2-Schematron-CII.xslt",
+    "BR-FR-Flux2-Schematron-CII_WARNING.sch",
+    "BR-FR-Flux2-Schematron-CII_WARNING.xslt",
 ]
 
 BR_FR_DIR = Path(fv.__file__).parent / "data" / "br_fr_ctc"
@@ -85,15 +87,25 @@ def test_br_fr_xslt_is_in_schematron_pipeline():
     assert fv.XSLT_PATH in fv.SCHEMATRON_XSLT_PATHS
 
 
-def test_br_fr_rules_are_detected():
-    """Un XML minimal doit déclencher au moins une règle BR-FR fatale,
-    prouvant que le Schématron France est bien exécuté par le pipeline."""
+def test_br_fr_variant_is_warning():
+    # La variante _WARNING est active : la plupart des BR-FR sont non bloquantes.
+    assert Path(str(fv.BR_FR_XSLT_PATH)).name == "BR-FR-Flux2-Schematron-CII_WARNING.xslt"
+
+
+def test_br_fr_rules_are_detected_as_warnings():
+    """Un XML minimal doit déclencher des règles BR-FR, prouvant que le
+    Schématron France s'exécute — et qu'avec la variante _WARNING les règles
+    flag=\"warning\" sont bien routées dans les avertissements."""
     pytest.importorskip("saxonche")
     stub = (
         '<rsm:CrossIndustryInvoice '
         'xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"/>'
     )
-    errors, _ = fv._collect_schematron(stub, xslt_paths=[fv.BR_FR_XSLT_PATH])
-    assert any("BR-FR" in (e.get("message") or "") for e in errors), (
+    errors, warnings = fv._collect_schematron(stub, xslt_paths=[fv.BR_FR_XSLT_PATH])
+    findings = errors + warnings
+    assert any("BR-FR" in (f.get("message") or "") for f in findings), (
         "aucune règle BR-FR déclenchée : le Schématron France ne s'exécute pas"
+    )
+    assert any("BR-FR" in (w.get("message") or "") for w in warnings), (
+        "aucune règle BR-FR en avertissement : le routage par flag ne fonctionne pas"
     )

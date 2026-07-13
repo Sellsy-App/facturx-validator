@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Python package for validating Factur-X PDF invoices (European e-invoicing standard). Performs two-stage validation: XSD schema validation (structural) and Schematron validation (business rules) using XSLT 3.0. Currently supports **Factur-X 1.09 EXTENDED** profile.
 
-Schematron validation runs **two** stylesheets over the same XML and merges the results: the EN16931/Factur-X rules, plus the **French CTC rules (BR-FR)** from the FNFE-MPE package `SCHEMATRONS_FR_CTC v1.4.0` (norme AFNOR XP Z12-012). The BR-FR rules add French mandate requirements (e.g. `BR-FR-02` invoice id charset, `BR-FR-05` mandatory legal notes PMT/PMD/AAB, `BR-FR-08` billing mode, `BR-FR-13` seller endpoint) and reproduce what the FNFE online validator reports.
+Schematron validation runs **two** stylesheets over the same XML and merges the results: the EN16931/Factur-X rules, plus the **French CTC rules (BR-FR)** from the FNFE-MPE package `SCHEMATRONS_FR_CTC v1.4.0` (norme AFNOR XP Z12-012). The BR-FR rules add French mandate requirements (e.g. `BR-FR-02` invoice id charset, `BR-FR-05` mandatory legal notes PMT/PMD/AAB, `BR-FR-08` billing mode, `BR-FR-13` seller endpoint).
+
+The bundled **`_WARNING` variant** of the BR-FR stylesheet is active: most BR-FR rules carry `flag="warning"` and are routed to `schematron_warnings` (non-blocking) instead of `schematron_errors`. Severity routing happens in `_collect_schematron` based on the SVRL `flag` attribute (`warning`/`information` → warning, anything else → error). To go strict (same severities as the FNFE online validator), point `BR_FR_XSLT_PATH` to `BR-FR-Flux2-Schematron-CII.xslt` — both variants are bundled in `data/br_fr_ctc/`.
 
 ## Commands
 

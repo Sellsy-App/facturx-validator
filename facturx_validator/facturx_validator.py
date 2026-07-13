@@ -8,7 +8,10 @@ XSLT_PATH = files(__package__ + ".data.factur_x_extended._XSLT_EXTENDED").joinpa
 # Schématron des règles France (BR-FR) de la réforme CTC — norme XP Z12-012,
 # distribué par la FNFE-MPE (package SCHEMATRONS_FR_CTC v1.4.0, profil Factur-X EXTENDED).
 # Ces règles s'ajoutent à la validation EN16931/Factur-X ci-dessus.
-BR_FR_XSLT_PATH = files(__package__ + ".data.br_fr_ctc").joinpath("BR-FR-Flux2-Schematron-CII.xslt")
+# Variante _WARNING : la plupart des règles BR-FR sont émises en flag="warning"
+# (classées dans schematron_warnings) au lieu de fatal, le temps de la transition.
+# Pour redevenir strict, pointer sur "BR-FR-Flux2-Schematron-CII.xslt" (aussi bundlé).
+BR_FR_XSLT_PATH = files(__package__ + ".data.br_fr_ctc").joinpath("BR-FR-Flux2-Schematron-CII_WARNING.xslt")
 
 # Feuilles XSLT Schématron appliquées successivement au même XML.
 SCHEMATRON_XSLT_PATHS = [XSLT_PATH, BR_FR_XSLT_PATH]
@@ -79,11 +82,17 @@ def _collect_schematron(xml_str, xslt_paths=SCHEMATRON_XSLT_PATHS):
             failed_asserts, successful_reports = _run_schematron_xslt(proc, xslt_path, xml_doc)
             for assert_elem in failed_asserts:
                 location = assert_elem.get('location', 'Location non spécifiée')
-                errors.append({
+                entry = {
                     'location': location,
                     'field': _extract_field_from_location(location),
                     'message': _svrl_message(assert_elem),
-                })
+                }
+                # Le flag Schematron porte la sévérité : warning/information → avertissement,
+                # tout le reste (fatal, error, absent) → erreur bloquante.
+                if assert_elem.get('flag') in ('warning', 'information'):
+                    warnings.append(entry)
+                else:
+                    errors.append(entry)
             for report_elem in successful_reports:
                 location = report_elem.get('location', 'Location non spécifiée')
                 warnings.append({
